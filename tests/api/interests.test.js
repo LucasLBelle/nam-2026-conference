@@ -87,6 +87,15 @@ describe('POST /users/:id/interests/describe', () => {
     assert.deepEqual([...calls[0].topicNames].sort(), [...topics].sort());
   });
 
+  test('keeps at most 8 real topics, in the model\'s order, after dropping the rest', async () => {
+    const answer = ['Nonsense', ...topics.slice(0, 12)];
+    stub(answer);
+    const res = await api.post(`/users/${KENJI}/interests/describe`, { text: 'everything' });
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.interests, topics.slice(0, 8));
+    assert.deepEqual(await interestsOf(KENJI), topics.slice(0, 8));
+  });
+
   test('no key is a 503 with a message and interests unchanged', async () => {
     await api.put(`/users/${KENJI}/interests`, { interests: [topics[2]] });
     model.available = () => false;

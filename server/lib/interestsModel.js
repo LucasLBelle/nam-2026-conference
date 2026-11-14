@@ -11,6 +11,9 @@ import { loadConfig } from '@anthropic-ai/sdk/core/credentials';
 
 const MODEL = process.env.ORBIT_INTERESTS_MODEL || 'claude-opus-5-5';
 
+/** The most topics one description sets; more than this stops being a profile. */
+export const MAX_SUGGESTED = 8;
+
 let client;
 
 export const model = {
@@ -35,6 +38,7 @@ export const model = {
         + 'Include every topic an attendee with those interests would plausibly want talks on, '
         + 'including closely related and adjacent ones, not only the single closest match. '
         + 'Leave out topics with no real connection. '
+        + `Return at most ${MAX_SUGGESTED}, most relevant first. `
         + 'Reply with only a JSON array of topic names copied exactly from the list, no other text.',
       messages: [{ role: 'user', content: `Topics: ${JSON.stringify(topicNames)}\n\nInterests: ${text}` }],
     });

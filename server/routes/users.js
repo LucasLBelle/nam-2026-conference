@@ -5,7 +5,7 @@ import { reserveSeat, releaseSeat, seatState } from '../lib/seats.js';
 import { attendanceState, checkIn, rateSession } from '../lib/attendance.js';
 import { todayFor, scheduleFor } from '../lib/agenda.js';
 import { setWindow } from '../lib/window.js';
-import { model } from '../lib/interestsModel.js';
+import { model, MAX_SUGGESTED } from '../lib/interestsModel.js';
 import { agendaCalendar, baseUrlFor } from '../lib/ical.js';
 
 export const usersRouter = Router();
@@ -70,7 +70,7 @@ usersRouter.post('/:id/interests/describe', async (req, res) => {
   } catch {
     return res.status(503).json({ error: 'Describing your interests is unavailable right now. Pick topics on My Profile instead.' });
   }
-  const keep = [...new Set(picked)].filter((n) => names.includes(n));
+  const keep = [...new Set(picked)].filter((n) => names.includes(n)).slice(0, MAX_SUGGESTED);
   if (!keep.length) return res.status(422).json({ error: "We couldn't match that to any topics. Try describing it differently." });
   saveInterests.run(keep.join(','), req.params.id);
   res.json({ interests: toUser(getUser.get(req.params.id)).interests });
