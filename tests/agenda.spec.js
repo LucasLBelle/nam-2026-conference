@@ -40,6 +40,36 @@ test.describe('My Agenda', () => {
       await expect(page.getByTestId('agenda-booked')).toBeVisible();
       await shotForPR(page, 'My Agenda with a seat and a waitlist place');
 
+      // Speakers: each once, name linking to their page, a photo, LinkedIn as text only, a working Follow.
+      const bySession = new Map(booked.map((s) => [s.id, s]));
+      const allSpeakers = booked.flatMap((s) => s.speakers);
+      const ids = [...new Set(allSpeakers.map((x) => x.id))];
+      const rowsOf = page.getByTestId('agenda-speaker');
+      await expect(page.getByTestId('agenda-speakers')).toBeVisible();
+      for (const id of ids) {
+        const sp = allSpeakers.find((x) => x.id === id);
+        await expect(rowsOf.filter({ has: page.getByRole('link', { name: sp.name, exact: true }) })).toHaveCount(1);
+      }
+      const first = allSpeakers[0];
+      const row = rowsOf.filter({ has: page.getByRole('link', { name: first.name, exact: true }) });
+      await expect(row.getByRole('link', { name: first.name, exact: true })).toHaveAttribute('href', `/speakers/${first.id}`);
+      await expect(row.locator('img')).toHaveCount(1);
+      const withLinkedin = allSpeakers.find((x) => x.socials?.linkedin);
+      if (withLinkedin) {
+        const lrow = rowsOf.filter({ has: page.getByRole('link', { name: withLinkedin.name, exact: true }) });
+        await expect(lrow.getByTestId('agenda-speaker-linkedin')).toHaveText(withLinkedin.socials.linkedin.replace(/^in\//, ''));
+        await expect(lrow.locator('a[href*="linkedin"]')).toHaveCount(0);
+      }
+      const followedIds = async () => ((await (await request.get(`${API}/users/${lane.user}`)).json()).followedSpeakers ?? []).map((x) => x.id ?? x);
+      const wasFollowing = (await followedIds()).includes(first.id);
+      try {
+        await row.getByTestId('agenda-speaker-follow').click();
+        await expect(row.getByTestId('agenda-speaker-follow')).toHaveAttribute('aria-pressed', String(!wasFollowing));
+        await expect.poll(async () => (await followedIds()).includes(first.id)).toBe(!wasFollowing);
+      } finally {
+        if ((await followedIds()).includes(first.id) !== wasFollowing) await request[wasFollowing ? 'put' : 'delete'](`${API}/users/${lane.user}/follows/${first.id}`);
+      }
+
       // Remove the seat: it leaves without a reload and the seat is released.
       await page.evaluate(() => { window.__noReload = true; });
       const before = await page.getByTestId('agenda-session').count();
@@ -50,11 +80,18 @@ test.describe('My Agenda', () => {
       const plan = await (await request.get(`${API}/users/${lane.user}/schedule`)).json();
       const held = plan.days.flatMap((d) => d.sessions).map((s) => s.id);
       expect(held).not.toContain(seat.id);
+      // A speaker only on the removed seat leaves the list too; one on the queued session stays.
+      const queuedIds = new Set(full.speakers.map((x) => x.id));
+      for (const sp of bySession.get(seat.id).speakers) {
+        await expect(page.getByTestId('agenda-speaker').filter({ has: page.getByRole('link', { name: sp.name, exact: true }) }))
+          .toHaveCount(queuedIds.has(sp.id) ? 1 : 0);
+      }
 
       // Nothing held: an empty state that links to the Schedule.
       await page.route('**/api/users/*/schedule', (route) => route.fulfill({ json: { user: {}, days: [] } }));
       await visit(page, '/my-agenda', { as: lane.user, at });
       await expect(page.getByTestId('agenda-empty')).toBeVisible();
+      await expect(page.getByTestId('agenda-speakers')).toHaveCount(0);
       await expect(page.getByTestId('agenda-empty').getByRole('link', { name: /schedule/i })).toHaveAttribute('href', '/schedule');
       expect(errors).toEqual([]);
     } finally {

@@ -1,10 +1,10 @@
 import { useMemo, useRef } from 'react';
 import { useConference, useFetch } from '../lib/store.jsx';
 import * as api from '../lib/api.js';
-import { viewAgenda, recommend, withSessions } from '../lib/agendaView.js';
+import { viewAgenda, speakersOf, recommend, withSessions } from '../lib/agendaView.js';
 import { dayLabel, timeRange } from '../lib/format.js';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
-import { Button, EmptyState, SeatButton, ErrorState, NotStepFree, SectionHeader, Skeleton, Stat } from '../components/ui.jsx';
+import { Avatar, Button, EmptyState, SeatButton, ErrorState, NotStepFree, SectionHeader, Skeleton, Stat } from '../components/ui.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ const hours = (mins) => `${Math.round((mins / 60) * 10) / 10}h`;
 
 export function MyAgendaPage() {
   useDocumentTitle('My Agenda');
-  const { currentUserId, reservationFor, toggleSeat, clock } = useConference();
+  const { currentUserId, reservationFor, toggleSeat, clock, isFollowing, toggleFollow } = useConference();
   const { data, loading, error, reload } = useFetch(() => api.getSchedule(currentUserId), [currentUserId]);
   // The store's currentUser is the bootstrap copy and goes stale after a Profile save.
   const me = useFetch(() => api.getUser(currentUserId), [currentUserId]);
@@ -34,6 +34,7 @@ export function MyAgendaPage() {
     () => viewAgenda(withSessions(data?.days ?? [], [...offered.current.values()]), reservationFor),
     [data, recs, reservationFor],
   );
+  const speakers = speakersOf(view);
 
   return (
     <div className="space-y-8">
@@ -87,6 +88,35 @@ export function MyAgendaPage() {
               </ul>
             </section>
           ))}
+          {speakers.length > 0 && (
+            <section data-testid="agenda-speakers" className="space-y-3">
+              <h2 className="font-display text-xl">Speakers from your sessions</h2>
+              <ul className="space-y-2">
+                {speakers.map((sp) => {
+                  const following = isFollowing(sp.id);
+                  const linkedin = sp.socials?.linkedin;
+                  return (
+                    <li key={sp.id} data-testid="agenda-speaker" className="flex items-center gap-3 rounded-xl border border-hairline bg-raised p-3">
+                      <Avatar name={sp.name} initials={sp.initials} accent={sp.accent} imageUrl={sp.imageUrl} />
+                      <div className="min-w-0 flex-1">
+                        <Link to={`/speakers/${sp.id}`} className="block truncate text-sm font-semibold hover:text-violet-200">{sp.name}</Link>
+                        {linkedin && <span data-testid="agenda-speaker-linkedin" className="text-xs text-muted">{linkedin.replace(/^in\//, '')}</span>}
+                      </div>
+                      <Button
+                        variant={following ? 'ghost' : 'primary'}
+                        size="sm"
+                        onClick={() => toggleFollow(sp.id)}
+                        aria-pressed={following}
+                        data-testid="agenda-speaker-follow"
+                      >
+                        {following ? 'Following' : 'Follow'}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
         </>
       )}
       {!error && (data || !loading) && me.data && (
