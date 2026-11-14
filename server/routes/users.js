@@ -4,6 +4,7 @@ import { SESSION_SELECT, toUser, toSpeaker, toSession } from '../lib/query.js';
 import { reserveSeat, releaseSeat, seatState } from '../lib/seats.js';
 import { attendanceState, checkIn, rateSession } from '../lib/attendance.js';
 import { todayFor, scheduleFor } from '../lib/agenda.js';
+import { setWindow } from '../lib/window.js';
 import { agendaCalendar, baseUrlFor } from '../lib/ical.js';
 
 export const usersRouter = Router();
@@ -89,6 +90,16 @@ usersRouter.put('/:id/diet', (req, res) => {
   }
   saveDiet.run(diet ?? '', req.params.id);
   res.json({ diet: toUser(getUser.get(req.params.id)).diet });
+});
+
+/** Set the arrival and departure together (each `{ day, time }` or null). */
+usersRouter.put('/:id/window', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { arrival, departure } = req.body ?? {};
+  const error = setWindow(req.params.id, arrival, departure);
+  if (error) return res.status(400).json({ error });
+  const user = toUser(getUser.get(req.params.id));
+  res.json({ arrival: user.arrival, departure: user.departure });
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */

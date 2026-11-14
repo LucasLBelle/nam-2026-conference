@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS users (
   interests   TEXT NOT NULL DEFAULT '',
   access_needs TEXT NOT NULL DEFAULT '',
   diet        TEXT NOT NULL DEFAULT '',
+  -- When they arrive and leave, 'YYYY-MM-DDTHH:MM' like ?at= (so strings compare in order); '' = not set.
+  arrives_at  TEXT NOT NULL DEFAULT '',
+  departs_at  TEXT NOT NULL DEFAULT '',
   -- Attendees who are also presenting link to their speakers row.
   speaker_id  INTEGER REFERENCES speakers(id)
 );
