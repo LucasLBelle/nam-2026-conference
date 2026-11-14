@@ -5,6 +5,7 @@ import { reserveSeat, releaseSeat, seatState } from '../lib/seats.js';
 import { attendanceState, checkIn, rateSession } from '../lib/attendance.js';
 import { todayFor, scheduleFor } from '../lib/agenda.js';
 import { setWindow } from '../lib/window.js';
+import { model, MAX_SUGGESTED } from '../lib/interestsModel.js';
 import { agendaCalendar, baseUrlFor } from '../lib/ical.js';
 
 export const usersRouter = Router();
@@ -56,6 +57,25 @@ usersRouter.get('/:id', (req, res) => {
     checkIns: myCheckIns.all(row.id).map((c) => c.session_id),
     ratings: myRatings.all(row.id).map((r) => ({ sessionId: r.session_id, stars: r.stars })),
   }));
+});
+
+/** Map free text to topic tags through the model and replace the attendee's interests with them. */
+usersRouter.post('/:id/interests/describe', async (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const text = req.body?.text;
+  if (typeof text !== 'string' || !text.trim()) return res.status(400).json({ error: 'text must be a non-empty string' });
+  if (!(await model.available())) return res.status(503).json({ error: 'Describing your interests is unavailable right now. Pick topics on My Profile instead.' });
+  const names = topicNames.all().map((t) => t.name);
+  let picked;
+  try {
+    picked = await model.suggest(text.trim(), names);
+  } catch {
+    return res.status(503).json({ error: 'Describing your interests is unavailable right now. Pick topics on My Profile instead.' });
+  }
+  const keep = [...new Set(picked)].filter((n) => names.includes(n)).slice(0, MAX_SUGGESTED);
+  if (!keep.length) return res.status(422).json({ error: "We couldn't match that to any topics. Try describing it differently." });
+  saveInterests.run(keep.join(','), req.params.id);
+  res.json({ interests: toUser(getUser.get(req.params.id)).interests });
 });
 
 /** Replace this attendee's topic interests; any name that is not a topic tag rejects the whole request. */
