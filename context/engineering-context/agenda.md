@@ -32,7 +32,7 @@ fetches `api.getUser` (fresh `interests`; the store's copy is stale after a Prof
 keeps upcoming sessions tagged (kind `topic`, by name) with any interest, not held (seat or
 waitlist) and not `hasEnded`, soonest first. Rows are `recommendation` with a `SeatButton` inside
 `recommendation-add` (so a clash opens `ConflictDialog`); with no interests
-`recommendations-set-interests` links to `/profile`. `withSessions(days, sessions)` merges
+`recommendations-set-interests` links to `/profile`. With `accessNeeds` including `step-free`, an `agenda-session` or `recommendation` row whose `room.accessible` is false carries `NotStepFree` (`not-step-free`); the session page's room note is gated the same way. `withSessions(days, sessions)` merges
 once-recommended sessions into the schedule's days so an added one lists without a reload. Still not on it: today view, suggestions, check-in, `.ics`. Payloads below
 are served, with matching functions in `src/lib/api.js`. What a day is made of is decided in
 `server/lib/agenda.js`; routes in `server/routes/users.js` only validate and call it.

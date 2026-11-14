@@ -192,6 +192,7 @@ export const toUser = (row, extra = {}) => ({
   initials: row.initials, accent: row.accent, imageUrl: row.image_url, bio: row.bio, pronouns: row.pronouns,
   homeCity: row.home_city, timezone: row.timezone, ticketTier: row.ticket_tier,
   interests: row.interests ? row.interests.split(',').filter(Boolean) : [],
+  accessNeeds: row.access_needs ? row.access_needs.split(',').filter(Boolean) : [],
   speakerId: row.speaker_id ?? null,
   isSpeaker: !!row.speaker_id,
   ...extra,

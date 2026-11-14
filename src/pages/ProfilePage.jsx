@@ -49,6 +49,54 @@ function Interests({ userId, saved }) {
   );
 }
 
+const ACCESS_OPTIONS = [
+  ['step-free', 'Step-free / wheelchair access'],
+  ['hearing', 'Hearing loop or captions'],
+  ['quiet', 'Quiet space'],
+];
+
+/** Accessibility needs: each click saves the whole set; a failed save keeps the old selection. */
+function AccessNeeds({ userId, saved }) {
+  const toast = useToast();
+  const [selected, setSelected] = useState(saved);
+  useEffect(() => setSelected(saved), [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggle = async (key) => {
+    const next = selected.includes(key) ? selected.filter((n) => n !== key) : [...selected, key];
+    try {
+      const res = await api.putAccessNeeds(userId, next);
+      setSelected(res.accessNeeds);
+    } catch (err) {
+      toast({ message: err.message, icon: 'alert' });
+    }
+  };
+
+  return (
+    <section className="card space-y-3 p-6" data-testid="profile-access-needs">
+      <h3 className="font-display text-xl">Accessibility needs</h3>
+      <div className="flex flex-wrap gap-2">
+        {ACCESS_OPTIONS.map(([key, label]) => {
+          const on = selected.includes(key);
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={on}
+              data-testid="access-need"
+              onClick={() => toggle(key)}
+              className={`rounded-full border px-3 py-1 text-sm transition-colors ${on
+                ? 'border-violet-400/60 bg-violet-400/20 text-ink'
+                : 'border-hairline bg-overlay/60 text-faint hover:text-ink'}`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 /** Profile of the signed-in attendee; refetches when the switcher changes them. */
 export function ProfilePage() {
   const { currentUser } = useConference();
@@ -85,6 +133,7 @@ export function ProfilePage() {
         </div>
       </section>
       <Interests userId={id} saved={user.interests} />
+      <AccessNeeds userId={id} saved={user.accessNeeds} />
       </>
     );
   }

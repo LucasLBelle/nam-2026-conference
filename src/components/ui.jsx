@@ -246,3 +246,12 @@ export function Stat({ value, label, accent: accentName = 'violet', testId, note
     </div>
   );
 }
+
+/** Flag for a session in a room without step-free access; callers show it only to attendees who need that. */
+export function NotStepFree({ className }) {
+  return (
+    <span data-testid="not-step-free" className={cx('inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300', className)}>
+      ⚠ Not step-free
+    </span>
+  );
+}

@@ -8,7 +8,7 @@ import { SessionCard } from '../components/SessionCard.jsx';
 import { GeneratedCover } from '../components/GeneratedCover.jsx';
 import { SeatPanel } from '../components/SeatPanel.jsx';
 import { AttendancePanel } from '../components/AttendancePanel.jsx';
-import { Avatar, Button, Chip, ErrorState, NotFoundState, Rating, Skeleton, TrackPill, cx } from '../components/ui.jsx';
+import { Avatar, Button, Chip, ErrorState, NotFoundState, Rating, NotStepFree, Skeleton, TrackPill, cx } from '../components/ui.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
 import { hasEnded } from '../lib/clock.js';
@@ -47,6 +47,9 @@ export function SessionPage() {
   const { id } = useParams();
   const { currentUserId, reservationFor, toggleSeat, seatsFor, clock } = useConference();
   const { data: session, loading, error, reload } = useFetch(() => api.getSession(id, currentUserId), [id, currentUserId]);
+  // The store's copy of the attendee goes stale after a Profile save, so ask for them afresh.
+  const me = useFetch(() => api.getUser(currentUserId), [currentUserId]);
+  const needsStepFree = me.data?.accessNeeds?.includes('step-free');
   const notFound = error?.status === 404;
   useDocumentTitle(notFound ? 'Not found' : session?.title);
 
@@ -291,9 +294,9 @@ export function SessionPage() {
                   ))}
                 </div>
               )}
-              {!session.room.accessible && (
+              {!session.room.accessible && needsStepFree && (
                 <p className="mt-2.5 text-[11px] text-amber-300">
-                  ⚠ Not step-free.{' '}
+                  <NotStepFree />{' '}
                   <Link to="/accessibility" className="underline underline-offset-2 hover:text-amber-200">
                     See step-free alternatives
                   </Link>
