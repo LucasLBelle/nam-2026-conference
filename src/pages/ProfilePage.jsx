@@ -146,7 +146,7 @@ function Diet({ userId, saved }) {
 
 const splitKey = (key) => (key ? { day: key.slice(0, 10), time: key.slice(11) } : { day: '', time: '' });
 
-/** Arrival and departure: a day and a time each, both optional; saved together so an invalid pair is never half-stored. */
+/** Arrival and departure: a day and a time each, both optional; saved on change once each end is whole or empty. */
 function ArrivalDeparture({ userId, saved }) {
   const { days } = useConference();
   const toast = useToast();
@@ -155,9 +155,8 @@ function ArrivalDeparture({ userId, saved }) {
     setForm({ arrival: splitKey(saved.arrival), departure: splitKey(saved.departure) });
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const set = (end, part, value) => setForm((f) => ({ ...f, [end]: { ...f[end], [part]: value } }));
-  // An end with neither day nor time is cleared; one with only half is left to the server's 400.
-  const save = async (next = form) => {
+  // An end with neither day nor time is cleared.
+  const save = async (next) => {
     const pick = (end) => (next[end].day || next[end].time ? next[end] : null);
     try {
       const res = await api.putWindow(userId, pick('arrival'), pick('departure'));
@@ -165,6 +164,14 @@ function ArrivalDeparture({ userId, saved }) {
     } catch (err) {
       toast({ message: err.message, icon: 'alert' });
     }
+  };
+  // No Save button: a change saves as soon as each end is whole (day and time) or empty,
+  // so picking a day before its time does not raise the server's 400 half-way through.
+  const settled = (e) => Boolean(e.day) === Boolean(e.time);
+  const set = (end, part, value) => {
+    const next = { ...form, [end]: { ...form[end], [part]: value } };
+    setForm(next);
+    if (settled(next.arrival) && settled(next.departure)) save(next);
   };
   const clear = (end) => save({ ...form, [end]: { day: '', time: '' } });
 
@@ -195,7 +202,6 @@ function ArrivalDeparture({ userId, saved }) {
           <button type="button" data-testid={`window-clear-${end}`} onClick={() => clear(end)} className="text-sm text-faint hover:text-ink">Clear</button>
         </div>
       ))}
-      <button type="button" data-testid="window-save" onClick={() => save()} className="rounded-full border border-violet-400/60 bg-violet-400/20 px-4 py-1 text-sm">Save</button>
     </section>
   );
 }

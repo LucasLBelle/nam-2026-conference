@@ -10,7 +10,7 @@ My Profile gets an "Arriving and leaving" card: arrival and departure, each a da
 - `src/lib/api.js` — `putWindow(userId, arrival, departure)` beside `putDiet`.
 - `src/lib/agendaView.js` — `recommend(sessions, interests, reservationFor, clock, limit = 8, window = {})`: add a filter keeping a session only if `!arrival || key(s.day, s.startsAt) >= arrival` and `!departure || key(s.day, s.endsAt) <= departure`. `window` is last so existing callers and tests stay valid.
 - `src/pages/MyAgendaPage.jsx` — pass `{ arrival: me.data?.arrival, departure: me.data?.departure }` to `recommend` (fresh from `api.getUser`, as `interests` already is) and add them to the `useMemo` deps.
-- `src/pages/ProfilePage.jsx` — `ArrivalDeparture({ userId, saved })` in the style of `Diet`: a `<select>` of conference days (from `useConference().days`) and `<input type="time">` for each end, a Save button, error toast on a 400 showing `err.message`, a Clear per end. Test ids `profile-window`, `arrival-day`, `arrival-time`, `departure-day`, `departure-time`, `window-save`, `window-clear-arrival`, `window-clear-departure`.
+- `src/pages/ProfilePage.jsx` — `ArrivalDeparture({ userId, saved })` in the style of `Diet`: a `<select>` of conference days (from `useConference().days`) and `<input type="time">` for each end, no Save button (a change saves once each end is whole or empty), error toast on a 400 showing `err.message`, a Clear per end. Test ids `profile-window`, `arrival-day`, `arrival-time`, `departure-day`, `departure-time`, `window-clear-arrival`, `window-clear-departure`.
 - Tests: `tests/unit/agendaView.test.js` (reuse its `r()` builder and `now`); `tests/api/interests.test.js` is the model for a new `tests/api/window.test.js` (`startApi`, `api.put`, KENJI/MARCUS ids); `tests/window.spec.js` using `visit`, `momentOn`, `conferenceDays`, `bookableFor`, `shotForPR` from `tests/helpers.js`, with a new lane `'profile.window'` added to `LANES` (desktop and mobile on two attendees no other spec writes interests or a window for; the spec restores `null`/`null` and the original interests in `finally`). Add `'PUT users/:id/window'` to the route list in `tests/api/endpoints.test.js`. Docs: `context/engineering-context/agenda.md` (recommend signature and rule), `data-model.md` (the two columns).
 
 ## How it will be proved
@@ -25,7 +25,7 @@ My Profile gets an "Arriving and leaving" card: arrival and departure, each a da
 ## Decisions
 - A session straddling an edge (starts before arrival, or ends after departure) is excluded, because "outside the window" is read as "not fully attendable" — OK?
 - Departure equal to arrival is accepted (a zero-length window), only strictly earlier is rejected — OK?
-- Arrival and departure are saved together with one Save button rather than on each change, so an invalid pair is never half-stored — OK?
+- Arrival and departure save on change, with no Save button, matching the other profile sections; a change waits until each end is whole (day and time) or empty, so picking a day before its time is not refused half-way through.
 - Only recommendations are filtered; sessions already on the agenda stay listed even if outside the window — OK?
 
 ## Out of scope

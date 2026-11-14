@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { API, visit, momentOn, laneFor, shotForPR } from './helpers.js';
 
-// One walk: set arrival and departure on My Profile (a departure before the arrival is refused with its
-// message and nothing is saved), reload and see them, then My Agenda's recommendations lose the sessions
+// One walk: set arrival and departure on My Profile, which save as each end is completed (a departure
+// before the arrival is refused with its message and is not saved), reload and see them, then My Agenda's recommendations lose the sessions
 // before and after the window, and clearing both brings them back. The clock is pinned before Day 1's first slot.
 test('arrival and departure on My Profile narrow My Agenda recommendations', async ({ page, request }, testInfo) => {
   const lane = await laneFor('profile.window', testInfo);
@@ -50,10 +50,9 @@ test('arrival and departure on My Profile narrow My Agenda recommendations', asy
     await box.getByTestId('arrival-time').fill(b.startsAt);
     await box.getByTestId('departure-day').selectOption(lane.day);
     await box.getByTestId('departure-time').fill(a.startsAt);
-    await box.getByTestId('window-save').click();
     await expect(page.getByText("Departure can't be earlier than arrival")).toBeVisible();
     await page.reload();
-    await expect(box.getByTestId('arrival-time')).toHaveValue('');
+    await expect(box.getByTestId('arrival-time')).toHaveValue(b.startsAt); // saved on its own once whole
     await expect(box.getByTestId('departure-time')).toHaveValue('');
 
     // A valid window around b: saved, shown after reload.
@@ -61,7 +60,6 @@ test('arrival and departure on My Profile narrow My Agenda recommendations', asy
     await box.getByTestId('arrival-time').fill(b.startsAt);
     await box.getByTestId('departure-day').selectOption(lane.day);
     await box.getByTestId('departure-time').fill(b.endsAt);
-    await box.getByTestId('window-save').click();
     await expect(async () => {
       const u = await (await request.get(`${API}/users/${lane.user}`)).json();
       expect(u.arrival).toBe(`${lane.day}T${b.startsAt}`);
