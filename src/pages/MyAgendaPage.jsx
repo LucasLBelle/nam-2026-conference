@@ -18,14 +18,16 @@ export function MyAgendaPage() {
   const me = useFetch(() => api.getUser(currentUserId), [currentUserId]);
   const all = useFetch(() => api.getSessions(), []);
   const interests = me.data?.interests;
+  const arrival = me.data?.arrival;
+  const departure = me.data?.departure;
   const flagged = (s) => me.data?.accessNeeds?.includes('step-free') && s.room && !s.room.accessible;
   // Every session ever offered as a recommendation: one added from here is not in the fetched schedule.
   const offered = useRef(new Map());
   const recs = useMemo(() => {
-    const out = recommend(all.data ?? [], interests ?? [], reservationFor, clock);
+    const out = recommend(all.data ?? [], interests ?? [], reservationFor, clock, 8, { arrival, departure });
     for (const s of out) offered.current.set(s.id, s);
     return out;
-  }, [all.data, interests, reservationFor, clock]);
+  }, [all.data, interests, arrival, departure, reservationFor, clock]);
   // Merge those in so a session added from a recommendation lists in the agenda at once.
   const view = useMemo(
     () => viewAgenda(withSessions(data?.days ?? [], [...offered.current.values()]), reservationFor),

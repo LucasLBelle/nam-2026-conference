@@ -29,14 +29,19 @@ export function viewAgenda(days, reservationFor) {
  * Upcoming sessions tagged (topic tags, by name) with any of the attendee's
  * interests, soonest first, leaving out anything already held — seat or
  * waitlist place — and anything over by the simulated clock. A full session
- * stays: its add button waitlists.
+ * stays: its add button waitlists. `window` is the attendee's `arrival` and
+ * `departure` ('YYYY-MM-DDTHH:MM', either may be null): a session not wholly
+ * inside it is left out, and with neither set nothing is.
  */
-export function recommend(sessions, interests, reservationFor, clock, limit = 8) {
+export function recommend(sessions, interests, reservationFor, clock, limit = 8, window = {}) {
   if (!interests?.length) return [];
   const wanted = new Set(interests);
+  const { arrival, departure } = window ?? {};
+  const inWindow = (s) => (!arrival || `${s.day}T${s.startsAt}` >= arrival) && (!departure || `${s.day}T${s.endsAt}` <= departure);
   return sessions
     .filter((s) => s.tags?.some((t) => t.kind === 'topic' && wanted.has(t.name)))
     .filter((s) => !reservationFor(s.id) && !hasEnded(s, clock))
+    .filter(inWindow)
     .sort((a, b) => a.day.localeCompare(b.day) || a.startsAt.localeCompare(b.startsAt) || a.id - b.id)
     .slice(0, limit);
 }

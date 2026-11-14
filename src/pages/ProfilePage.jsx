@@ -144,6 +144,68 @@ function Diet({ userId, saved }) {
   );
 }
 
+const splitKey = (key) => (key ? { day: key.slice(0, 10), time: key.slice(11) } : { day: '', time: '' });
+
+/** Arrival and departure: a day and a time each, both optional; saved on change once each end is whole or empty. */
+function ArrivalDeparture({ userId, saved }) {
+  const { days } = useConference();
+  const toast = useToast();
+  const [form, setForm] = useState({ arrival: splitKey(saved.arrival), departure: splitKey(saved.departure) });
+  useEffect(() => {
+    setForm({ arrival: splitKey(saved.arrival), departure: splitKey(saved.departure) });
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // An end with neither day nor time is cleared.
+  const save = async (next) => {
+    const pick = (end) => (next[end].day || next[end].time ? next[end] : null);
+    try {
+      const res = await api.putWindow(userId, pick('arrival'), pick('departure'));
+      setForm({ arrival: splitKey(res.arrival), departure: splitKey(res.departure) });
+    } catch (err) {
+      toast({ message: err.message, icon: 'alert' });
+    }
+  };
+  // No Save button: a change saves as soon as each end is whole (day and time) or empty,
+  // so picking a day before its time does not raise the server's 400 half-way through.
+  const settled = (e) => Boolean(e.day) === Boolean(e.time);
+  const set = (end, part, value) => {
+    const next = { ...form, [end]: { ...form[end], [part]: value } };
+    setForm(next);
+    if (settled(next.arrival) && settled(next.departure)) save(next);
+  };
+  const clear = (end) => save({ ...form, [end]: { day: '', time: '' } });
+
+  return (
+    <section className="card space-y-3 p-6" data-testid="profile-window">
+      <h3 className="font-display text-xl">Arriving and leaving</h3>
+      {['arrival', 'departure'].map((end) => (
+        <div key={end} className="flex flex-wrap items-center gap-2">
+          <span className="w-24 text-sm text-faint">{end === 'arrival' ? 'Arriving' : 'Leaving'}</span>
+          <select
+            aria-label={`${end} day`}
+            data-testid={`${end}-day`}
+            value={form[end].day}
+            onChange={(e) => set(end, 'day', e.target.value)}
+            className="rounded-lg border border-hairline bg-overlay/60 px-2 py-1 text-sm"
+          >
+            <option value="">No day</option>
+            {days.map((d) => <option key={d.date} value={d.date}>{d.label ?? d.date}</option>)}
+          </select>
+          <input
+            type="time"
+            aria-label={`${end} time`}
+            data-testid={`${end}-time`}
+            value={form[end].time}
+            onChange={(e) => set(end, 'time', e.target.value)}
+            className="rounded-lg border border-hairline bg-overlay/60 px-2 py-1 text-sm"
+          />
+          <button type="button" data-testid={`window-clear-${end}`} onClick={() => clear(end)} className="text-sm text-faint hover:text-ink">Clear</button>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 /** Profile of the signed-in attendee; refetches when the switcher changes them. */
 export function ProfilePage() {
   const { currentUser } = useConference();
@@ -182,6 +244,7 @@ export function ProfilePage() {
       <Interests userId={id} saved={user.interests} />
       <AccessNeeds userId={id} saved={user.accessNeeds} />
       <Diet userId={id} saved={user.diet} />
+      <ArrivalDeparture userId={id} saved={{ arrival: user.arrival, departure: user.departure }} />
       </>
     );
   }

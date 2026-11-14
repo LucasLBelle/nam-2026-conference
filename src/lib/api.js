@@ -62,6 +62,7 @@ export const sessionCalendarUrl = (sessionId) => `/api/sessions/${sessionId}.ics
 
 export const putAccessNeeds = (userId, accessNeeds) => api(`/users/${userId}/access-needs`, { method: 'PUT', body: JSON.stringify({ accessNeeds }) });
 export const putDiet = (userId, diet) => api(`/users/${userId}/diet`, { method: 'PUT', body: JSON.stringify({ diet }) });
+export const putWindow = (userId, arrival, departure) => api(`/users/${userId}/window`, { method: 'PUT', body: JSON.stringify({ arrival, departure }) });
 export const putInterests = (userId, interests) => api(`/users/${userId}/interests`, { method: 'PUT', body: JSON.stringify({ interests }) });
 export const followSpeaker = (userId, speakerId) => api(`/users/${userId}/follows/${speakerId}`, { method: 'PUT' });
 export const unfollowSpeaker = (userId, speakerId) => api(`/users/${userId}/follows/${speakerId}`, { method: 'DELETE' });
