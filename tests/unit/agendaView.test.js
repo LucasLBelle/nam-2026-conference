@@ -110,3 +110,34 @@ test('recommend window: days count, not just times', () => {
   assert.deepEqual(ids({ arrival: '2030-01-03T00:00' }), [24]);
   assert.deepEqual(ids({ departure: '2030-01-02T23:59' }), [21, 22, 23]);
 });
+
+// A maximum level moves sessions above it after every one at or below; nothing is removed.
+const lv = (id, startsAt, level) => ({ ...r(id, '2030-01-02', startsAt, `${startsAt.slice(0, 2)}:59`, ['AI']), level });
+const early = { day: '2030-01-02', time: '07:00' };
+const levels = [
+  lv(1, '08:00', 'Advanced'), lv(2, '09:00', 'Beginner'), lv(3, '10:00', 'Intermediate'),
+  lv(4, '11:00', 'Advanced'), lv(5, '12:00', 'All Levels'),
+];
+const byLevel = (max, limit = 8, list = levels) =>
+  recommend(list, ['AI'], () => null, early, limit, {}, max).map((x) => x.id);
+
+test('recommend: above the maximum comes after everything at or below it, each group soonest first', () => {
+  assert.deepEqual(byLevel('Intermediate'), [2, 3, 5, 1, 4]);
+  assert.deepEqual(byLevel('Beginner'), [2, 5, 1, 3, 4]);
+  assert.deepEqual(byLevel('Advanced'), [1, 2, 3, 4, 5]);
+});
+
+test('recommend: "All Levels" ranks as at or below any maximum', () => {
+  assert.deepEqual(byLevel('Beginner', 8, [lv(1, '08:00', 'Advanced'), lv(2, '12:00', 'All Levels')]), [2, 1]);
+});
+
+test('recommend: no maximum, null or omitted, leaves the soonest-first order', () => {
+  assert.deepEqual(byLevel(null), [1, 2, 3, 4, 5]);
+  assert.deepEqual(byLevel(undefined), [1, 2, 3, 4, 5]);
+  assert.deepEqual(recommend(levels, ['AI'], () => null, early).map((x) => x.id), [1, 2, 3, 4, 5]);
+});
+
+test('recommend: the limit applies after the reorder, so above-maximum sessions show only when the rest run out', () => {
+  assert.deepEqual(byLevel('Beginner', 2), [2, 5]);
+  assert.deepEqual(byLevel('Beginner', 3), [2, 5, 1]);
+});
