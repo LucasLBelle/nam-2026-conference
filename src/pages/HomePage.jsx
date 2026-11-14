@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useConference, useFetch } from '../lib/store.jsx';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
 import * as api from '../lib/api.js';
@@ -127,6 +128,50 @@ function LatestAnnouncement() {
   );
 }
 
+/** Say what you are into; Claude maps it to topic tags, which land on My Profile. */
+function DescribeInterests() {
+  const { currentUser } = useConference();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await api.describeInterests(currentUser.id, text);
+      navigate('/profile', { state: { interestsSet: true } });
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="card space-y-3 p-5" data-testid="describe-interests">
+      {!open ? (
+        <Button size="sm" data-testid="describe-interests-open" onClick={() => setOpen(true)}>
+          Tell me what you're interested in
+        </Button>
+      ) : (
+        <form onSubmit={submit} className="space-y-3">
+          <label className="block text-sm font-semibold" htmlFor="describe-interests-text">What are you interested in?</label>
+          <textarea id="describe-interests-text" data-testid="describe-interests-text" rows={3} value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="w-full rounded-lg border border-hairline bg-overlay/60 p-3 text-sm" />
+          {error && <p role="alert" className="text-sm text-amber-300" data-testid="describe-interests-error">{error}</p>}
+          <Button type="submit" variant="primary" size="sm" disabled={busy || !text.trim()} data-testid="describe-interests-submit">
+            Set my interests
+          </Button>
+        </form>
+      )}
+    </section>
+  );
+}
+
 export function HomePage() {
   const { conference } = useConference();
   useDocumentTitle("ORBIT '26");
@@ -137,6 +182,7 @@ export function HomePage() {
     <div className="space-y-8 [&>:empty]:hidden">
       <HeroBar conference={conference} />
       <QuickLinks />
+      <DescribeInterests />
       <Reveal><LatestAnnouncement /></Reveal>
       <SponsorMarquee />
     </div>

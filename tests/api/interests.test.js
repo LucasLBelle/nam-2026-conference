@@ -82,7 +82,9 @@ describe('POST /users/:id/interests/describe', () => {
     assert.equal(res.status, 200);
     assert.deepEqual(res.body, { interests: [topics[0], topics[1]] });
     assert.deepEqual(await interestsOf(KENJI), [topics[0], topics[1]]);
-    assert.deepEqual(calls, [{ text: 'machine learning', topicNames: topics }]);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].text, 'machine learning');
+    assert.deepEqual([...calls[0].topicNames].sort(), [...topics].sort());
   });
 
   test('no key is a 503 with a message and interests unchanged', async () => {

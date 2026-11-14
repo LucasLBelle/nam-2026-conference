@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useConference, useFetch } from '../lib/store.jsx';
 import * as api from '../lib/api.js';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
@@ -9,6 +10,7 @@ import { Avatar, ErrorState, SectionHeader, Skeleton } from '../components/ui.js
 function Interests({ userId, saved }) {
   const { tags } = useConference();
   const toast = useToast();
+  const interestsSet = useLocation().state?.interestsSet;
   const [selected, setSelected] = useState(saved);
   useEffect(() => setSelected(saved), [userId]); // eslint-disable-line react-hooks/exhaustive-deps
   const topics = tags.filter((t) => t.kind === 'topic');
@@ -26,6 +28,9 @@ function Interests({ userId, saved }) {
   return (
     <section className="card space-y-3 p-6" data-testid="profile-interests">
       <h3 className="font-display text-xl">Interests</h3>
+      {interestsSet && (
+        <p className="text-sm text-muted" data-testid="interests-note">We've set your interests based on what you told us</p>
+      )}
       <div className="flex flex-wrap gap-2">
         {topics.map((t) => {
           const on = selected.includes(t.name);
