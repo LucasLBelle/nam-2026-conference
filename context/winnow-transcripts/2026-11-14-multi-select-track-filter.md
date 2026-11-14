@@ -1,0 +1,10 @@
+- **Title:** Multi-select track filter on the schedule
+- **Date:** 2026-11-14
+- **Participants:** Unknown
+- **Source:** `context/winnow-transcripts/demo-transcript.txt`
+- **Tickets raised:** [#1 — Allow selecting multiple tracks in the schedule filter](https://github.com/LucasLBelle/nam-2026-conference/issues/1)
+- **Context updated:** None — the multi-value-filter pattern this ticket implements was already documented in `context/engineering-context/schedule.md` (Gotchas).
+- **Set aside:** Nothing. The transcript is a single short request with no small talk or off-topic content to drop.
+- **Q&A:**
+  - Asked whether to scope the ticket to the track filter only or also extend the same change to the tag/topic filter. Answered: track filter only — the tag/topic filter is left for a future request, not bundled in.
+  - Asked whether to proceed with creating the GitHub issue. Answered: yes.
