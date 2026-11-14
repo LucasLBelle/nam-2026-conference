@@ -25,24 +25,31 @@ export function viewAgenda(days, reservationFor) {
   return { days: out, bookedMinutes, waitlistedMinutes };
 }
 
+const LEVEL_RANK = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+
 /**
  * Upcoming sessions tagged (topic tags, by name) with any of the attendee's
  * interests, soonest first, leaving out anything already held — seat or
  * waitlist place — and anything over by the simulated clock. A full session
  * stays: its add button waitlists. `window` is the attendee's `arrival` and
  * `departure` ('YYYY-MM-DDTHH:MM', either may be null): a session not wholly
- * inside it is left out, and with neither set nothing is.
+ * inside it is left out, and with neither set nothing is. With a `maxLevel`
+ * (Beginner, Intermediate, Advanced) sessions above it come after all the rest,
+ * each group soonest first; "All Levels" counts as within any maximum.
  */
-export function recommend(sessions, interests, reservationFor, clock, limit = 8, window = {}) {
+export function recommend(sessions, interests, reservationFor, clock, limit = 8, window = {}, maxLevel = null) {
   if (!interests?.length) return [];
   const wanted = new Set(interests);
   const { arrival, departure } = window ?? {};
   const inWindow = (s) => (!arrival || `${s.day}T${s.startsAt}` >= arrival) && (!departure || `${s.day}T${s.endsAt}` <= departure);
+  const cap = LEVEL_RANK[maxLevel];
+  // 1 = above the attendee's maximum; "All Levels" and no maximum rank 0.
+  const above = (s) => (cap !== undefined && LEVEL_RANK[s.level] > cap ? 1 : 0);
   return sessions
     .filter((s) => s.tags?.some((t) => t.kind === 'topic' && wanted.has(t.name)))
     .filter((s) => !reservationFor(s.id) && !hasEnded(s, clock))
     .filter(inWindow)
-    .sort((a, b) => a.day.localeCompare(b.day) || a.startsAt.localeCompare(b.startsAt) || a.id - b.id)
+    .sort((a, b) => above(a) - above(b) || a.day.localeCompare(b.day) || a.startsAt.localeCompare(b.startsAt) || a.id - b.id)
     .slice(0, limit);
 }
 

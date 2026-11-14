@@ -137,6 +137,8 @@ export const LANES = {
   'diet.profile':     { desktop: { user: marcus, day: 0, readOnly: true }, mobile: { user: jonas, day: 0, readOnly: true } },
   // Sets an arrival/departure window and sets interests to see recommendations narrow; books nothing. No other lane writes a window or these attendees' interests.
   'profile.window':   { desktop: { user: abraham, day: 0, readOnly: true }, mobile: { user: andy, day: 0, readOnly: true } },
+  // Sets a maximum level and reads My Agenda's recommendations reorder; books nothing. No other lane writes a level or these attendees' interests.
+  'profile.level':    { desktop: { user: kenji, day: 0, readOnly: true }, mobile: { user: sofia, day: 0, readOnly: true } },
   // Check-ins and ratings only — no seat is booked, so agenda: false lets these
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.
