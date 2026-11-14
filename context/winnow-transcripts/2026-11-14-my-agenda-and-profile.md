@@ -1,0 +1,21 @@
+- **Title:** My Agenda and My Profile — personalised agenda with interest-based recommendations
+- **Date:** 2026-11-14
+- **Participants:** RJ Mey and unnamed group members (the transcript labels only one speaker)
+- **Source:** `context/winnow-transcripts/product-group-2-transcript.txt`
+- **Tickets raised:**
+  - [#2 — Add a My Profile page reachable from a Profile tab in the top nav](https://github.com/LucasLBelle/nam-2026-conference/issues/2)
+  - [#3 — Let attendees pick their topic interests on My Profile](https://github.com/LucasLBelle/nam-2026-conference/issues/3) (depends on #2)
+  - [#4 — Show the attendee's sessions on My Agenda with a way to remove them](https://github.com/LucasLBelle/nam-2026-conference/issues/4)
+  - [#5 — Recommend sessions on My Agenda from the attendee's interests](https://github.com/LucasLBelle/nam-2026-conference/issues/5) (depends on #3 and #4)
+- **Context updated:** None — nothing discussed exists yet, and the context describes present state; each ticket updates the docs it changes when it ships.
+- **Set aside:**
+  - Adding and removing sessions from the Schedule page — already built (the seat button on the grid and session cards).
+  - A separate list of "confirmed" or "subscribed" talks — the app has exactly one action, taking a seat (CLAUDE.md), so adding from recommendations takes a seat.
+  - Advice on running the meeting (discuss one feature at a time to avoid a flood of tickets) — about using Winnow, not the app.
+  - Meeting logistics (sharing the Meet over Slack, whether to feed the transcript in).
+- **Q&A:**
+  - Asked whether interests come from the 10 programme tracks, the topic tags, or both. Answered: topic tags only.
+  - Asked whether adding a recommended session takes a seat or goes on a separate shortlist. Answered: it takes a seat.
+  - Asked where My Profile is reached from (the meeting said both a top tab and under the attendee's name). Answered: a new top-nav tab.
+  - Asked how to split the work. Answered: four tickets — profile page, interests picker, agenda list, recommendations.
+  - Asked whether to create the issues and write this record. Answered: yes.
