@@ -12,9 +12,9 @@ test('a dietary requirement on My Profile becomes the Food page filter', async (
   const vendors = async (q = '') => (await (await request.get(`${API}/vendors${q}`)).json());
   const total = (await vendors()).length;
   const glutenFree = (await vendors('?dietary=gluten-free')).length;
-  const vegan = (await vendors('?dietary=vegan')).length;
+  const vegetarian = (await vendors('?dietary=vegetarian')).length;
   expect(glutenFree).toBeLessThan(total);
-  expect(vegan).not.toBe(glutenFree);
+  expect(vegetarian).not.toBe(glutenFree);
 
   const select = page.getByTestId('food-filters').getByLabel('Dietary');
   const count = page.getByTestId('vendor-count');
@@ -47,9 +47,9 @@ test('a dietary requirement on My Profile becomes the Food page filter', async (
     await expect(select).toHaveValue('gluten-free');
     await expect(count).toHaveText(`${glutenFree} vendors`);
     await shotForPR(page, 'Food page filtered by the profile diet');
-    await visit(page, '/food?dietary=vegan', { as: lane.user, at });
-    await expect(select).toHaveValue('vegan');
-    await expect(count).toHaveText(`${vegan} vendors`);
+    await visit(page, '/food?dietary=vegetarian', { as: lane.user, at });
+    await expect(select).toHaveValue('vegetarian');
+    await expect(count).toHaveText(`${vegetarian} vendors`);
 
     // Clearing sticks, through a reload.
     await visit(page, '/food', { as: lane.user, at });

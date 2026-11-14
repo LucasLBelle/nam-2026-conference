@@ -84,7 +84,7 @@ sessions that day are listed in one "stages are dark" line. Time maths from
 **`FoodPage`** — params `q`, `venue`, `dietary` (`vegan | vegetarian |
 gluten-free`), `cuisine` (server-side), `sort` (`rating` default | `wait` |
 `name`) and `open=1` (client-side, `clock.js:isOpenAt`, which handles closing
-after midnight). With `sort=rating`, the first vendor is `featured` (spans 2
+after midnight). With no `dietary` in the URL the attendee's saved `diet` (`getUser`) is the filter and the vendor fetch waits for it; "Any dietary" then writes `dietary=all` so the profile does not re-apply. With `sort=rating`, the first vendor is `featured` (spans 2
 columns, "Top rated"). Cover art is `GeneratedCover variant="mesh"` coloured by
 `accentFor(vendor.cuisine)`. Testids: `food-filters`, `food-search`,
 `open-now-toggle`, `vendor-count`.

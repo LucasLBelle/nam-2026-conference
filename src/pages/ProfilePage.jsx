@@ -97,6 +97,53 @@ function AccessNeeds({ userId, saved }) {
   );
 }
 
+const DIET_OPTIONS = [
+  ['vegan', 'Vegan'],
+  ['vegetarian', 'Vegetarian'],
+  ['gluten-free', 'Gluten-free'],
+];
+
+/** Dietary requirement: one at a time, click the chosen one again to clear; the Food page starts from it. */
+function Diet({ userId, saved }) {
+  const toast = useToast();
+  const [selected, setSelected] = useState(saved);
+  useEffect(() => setSelected(saved), [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const choose = async (key) => {
+    try {
+      const res = await api.putDiet(userId, selected === key ? null : key);
+      setSelected(res.diet);
+    } catch (err) {
+      toast({ message: err.message, icon: 'alert' });
+    }
+  };
+
+  return (
+    <section className="card space-y-3 p-6" data-testid="profile-diet">
+      <h3 className="font-display text-xl">Dietary requirements</h3>
+      <div className="flex flex-wrap gap-2">
+        {DIET_OPTIONS.map(([key, label]) => {
+          const on = selected === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={on}
+              data-testid="diet-option"
+              onClick={() => choose(key)}
+              className={`rounded-full border px-3 py-1 text-sm transition-colors ${on
+                ? 'border-violet-400/60 bg-violet-400/20 text-ink'
+                : 'border-hairline bg-overlay/60 text-faint hover:text-ink'}`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 /** Profile of the signed-in attendee; refetches when the switcher changes them. */
 export function ProfilePage() {
   const { currentUser } = useConference();
@@ -134,6 +181,7 @@ export function ProfilePage() {
       </section>
       <Interests userId={id} saved={user.interests} />
       <AccessNeeds userId={id} saved={user.accessNeeds} />
+      <Diet userId={id} saved={user.diet} />
       </>
     );
   }
