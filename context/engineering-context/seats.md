@@ -9,6 +9,7 @@ files:
   - src/components/ConflictDialog.jsx
 tests:
   - tests/api/seats.test.js
+  - tests/api/interests.test.js
   - tests/api/overlap.test.js
   - tests/seats.spec.js
 related: [attendance, agenda, clock, architecture, testing]
@@ -63,7 +64,8 @@ logic lives elsewhere: `GET /` and `GET /:id` (the user plus `followedSpeakers`,
 `GET /:id/schedule` (`lib/agenda.js:todayFor`/`scheduleFor`, see the agenda
 doc); attendance, check-in and rating routes (see the attendance doc); and
 `PUT`/`DELETE /:id/follows/:speakerId`, which write `speaker_follows` directly
-through the module-scope `follow`/`unfollow` statements.
+through the module-scope `follow`/`unfollow` statements; `PUT /:id/interests` replaces the
+attendee's topic interests (`{ interests: string[] }`, comma-joined in `users.interests`; 400 `unknown topic: <name>` for anything not a `topic` tag).
 
 **Client.** `src/lib/api.js:reserveSeat(userId, sessionId, now)` PUTs `now` as
 the body; `api()` throws on non-2xx but keeps `err.status` and `err.payload`.
