@@ -10,6 +10,7 @@ files:
 tests:
   - tests/api/seats.test.js
   - tests/api/interests.test.js
+  - tests/api/interests-describe-fresh.test.js
   - server/lib/interestsModel.js
   - tests/api/access-needs.test.js
   - tests/api/diet.test.js
