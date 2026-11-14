@@ -66,6 +66,5 @@ export const putDiet = (userId, diet) => api(`/users/${userId}/diet`, { method: 
 export const putJobTitle = (userId, jobTitle) => api(`/users/${userId}/job-title`, { method: 'PUT', body: JSON.stringify({ jobTitle }) });
 export const putWindow = (userId, arrival, departure) => api(`/users/${userId}/window`, { method: 'PUT', body: JSON.stringify({ arrival, departure }) });
 export const putInterests = (userId, interests) => api(`/users/${userId}/interests`, { method: 'PUT', body: JSON.stringify({ interests }) });
-export const describeInterests = (userId, text) => api(`/users/${userId}/interests/describe`, { method: 'POST', body: JSON.stringify({ text }) });
 export const followSpeaker = (userId, speakerId) => api(`/users/${userId}/follows/${speakerId}`, { method: 'PUT' });
 export const unfollowSpeaker = (userId, speakerId) => api(`/users/${userId}/follows/${speakerId}`, { method: 'DELETE' });
