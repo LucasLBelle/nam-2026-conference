@@ -144,6 +144,49 @@ function Diet({ userId, saved }) {
   );
 }
 
+const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced'];
+
+/** Highest session level: one at a time, click the chosen one again to clear; My Agenda lists sessions above it last. */
+function MaxLevel({ userId, saved }) {
+  const toast = useToast();
+  const [selected, setSelected] = useState(saved);
+  useEffect(() => setSelected(saved), [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const choose = async (level) => {
+    try {
+      const res = await api.putLevel(userId, selected === level ? null : level);
+      setSelected(res.level);
+    } catch (err) {
+      toast({ message: err.message, icon: 'alert' });
+    }
+  };
+
+  return (
+    <section className="card space-y-3 p-6" data-testid="profile-level">
+      <h3 className="font-display text-xl">Highest session level</h3>
+      <div className="flex flex-wrap gap-2">
+        {LEVEL_OPTIONS.map((level) => {
+          const on = selected === level;
+          return (
+            <button
+              key={level}
+              type="button"
+              aria-pressed={on}
+              data-testid="level-option"
+              onClick={() => choose(level)}
+              className={`rounded-full border px-3 py-1 text-sm transition-colors ${on
+                ? 'border-violet-400/60 bg-violet-400/20 text-ink'
+                : 'border-hairline bg-overlay/60 text-faint hover:text-ink'}`}
+            >
+              {level}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 const splitKey = (key) => (key ? { day: key.slice(0, 10), time: key.slice(11) } : { day: '', time: '' });
 
 /** Arrival and departure: a day and a time each, both optional; saved on change once each end is whole or empty. */
@@ -245,6 +288,7 @@ export function ProfilePage() {
       <AccessNeeds userId={id} saved={user.accessNeeds} />
       <Diet userId={id} saved={user.diet} />
       <ArrivalDeparture userId={id} saved={{ arrival: user.arrival, departure: user.departure }} />
+      <MaxLevel userId={id} saved={user.maxLevel} />
       </>
     );
   }

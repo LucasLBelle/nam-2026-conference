@@ -31,9 +31,9 @@ per-day and total `bookedMinutes` (confirmed only) and `waitlistedMinutes`. Test
 (calls `toggleSeat`, so the row leaves without a reload) and `agenda-empty` (links to
 `/schedule`). Below the list, **Recommended for you** (`agenda-recommendations`): the page also
 fetches `api.getUser` (fresh `interests`; the store's copy is stale after a Profile save) and
-`api.getSessions()`, and `agendaView.js:recommend(sessions, interests, reservationFor, clock, limit=8, window={})`
+`api.getSessions()`, and `agendaView.js:recommend(sessions, interests, reservationFor, clock, limit=8, window={}, maxLevel=null)`
 keeps upcoming sessions tagged (kind `topic`, by name) with any interest, not held (seat or
-waitlist) and not `hasEnded`, soonest first; `window` is `{ arrival, departure }` from `getUser` (`YYYY-MM-DDTHH:MM` or null) and a session not wholly inside it (starts before arrival or ends after departure) is dropped, nothing when unset. Rows are `recommendation` with a `SeatButton` inside
+waitlist) and not `hasEnded`, soonest first; `window` is `{ arrival, departure }` from `getUser` (`YYYY-MM-DDTHH:MM` or null) and a session not wholly inside it (starts before arrival or ends after departure) is dropped, nothing when unset. `maxLevel` (`getUser`'s, `Beginner | Intermediate | Advanced | null`) reorders without dropping: sessions whose `level` is above it come after all the rest ("All Levels" counts as within), each group soonest first, and `limit` applies after; null keeps the plain order. Rows are `recommendation` with a `SeatButton` inside
 `recommendation-add` (so a clash opens `ConflictDialog`); with no interests
 `recommendations-set-interests` links to `/profile`. With `accessNeeds` including `step-free`, an `agenda-session` or `recommendation` row whose `room.accessible` is false carries `NotStepFree` (`not-step-free`); the session page's room note is gated the same way. `withSessions(days, sessions)` merges
 once-recommended sessions into the schedule's days so an added one lists without a reload. Still not on it: today view, suggestions, check-in, `.ics`. Payloads below
