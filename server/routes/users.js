@@ -30,6 +30,8 @@ const saveAccessNeeds = db.prepare('UPDATE users SET access_needs = ? WHERE id =
 const ACCESS_NEEDS = ['step-free', 'hearing', 'quiet'];
 const saveDiet = db.prepare('UPDATE users SET diet = ? WHERE id = ?');
 const DIETS = ['vegan', 'vegetarian', 'gluten-free'];
+const saveMaxLevel = db.prepare('UPDATE users SET max_level = ? WHERE id = ?');
+const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 const follow = db.prepare('INSERT OR IGNORE INTO speaker_follows (user_id, speaker_id) VALUES (?, ?)');
 const unfollow = db.prepare('DELETE FROM speaker_follows WHERE user_id = ? AND speaker_id = ?');
 
@@ -110,6 +112,17 @@ usersRouter.put('/:id/diet', (req, res) => {
   }
   saveDiet.run(diet ?? '', req.params.id);
   res.json({ diet: toUser(getUser.get(req.params.id)).diet });
+});
+
+/** Set (or, with null, clear) the highest session level this attendee is comfortable with; anything outside LEVELS is a 400. */
+usersRouter.put('/:id/level', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { level } = req.body ?? {};
+  if (level !== null && !LEVELS.includes(level)) {
+    return res.status(400).json({ error: `level must be one of ${LEVELS.join(', ')}, or null` });
+  }
+  saveMaxLevel.run(level ?? '', req.params.id);
+  res.json({ level: toUser(getUser.get(req.params.id)).maxLevel });
 });
 
 /** Set the arrival and departure together (each `{ day, time }` or null). */

@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS users (
   interests   TEXT NOT NULL DEFAULT '',
   access_needs TEXT NOT NULL DEFAULT '',
   diet        TEXT NOT NULL DEFAULT '',
+  -- Highest session level they are comfortable with (Beginner, Intermediate, Advanced); '' = not set.
+  max_level   TEXT NOT NULL DEFAULT '',
   -- When they arrive and leave, 'YYYY-MM-DDTHH:MM' like ?at= (so strings compare in order); '' = not set.
   arrives_at  TEXT NOT NULL DEFAULT '',
   departs_at  TEXT NOT NULL DEFAULT '',
