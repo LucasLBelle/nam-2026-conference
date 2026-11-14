@@ -12,6 +12,7 @@ tests:
   - tests/api/interests.test.js
   - tests/api/access-needs.test.js
   - tests/api/diet.test.js
+  - tests/api/job-title.test.js
   - tests/api/level.test.js
   - tests/profile-level.spec.js
   - tests/api/overlap.test.js
@@ -69,7 +70,7 @@ logic lives elsewhere: `GET /` and `GET /:id` (the user plus `followedSpeakers`,
 doc); attendance, check-in and rating routes (see the attendance doc); and
 `PUT`/`DELETE /:id/follows/:speakerId`, which write `speaker_follows` directly
 through the module-scope `follow`/`unfollow` statements; `PUT /:id/interests` replaces the
-attendee's topic interests (`{ interests: string[] }`, comma-joined in `users.interests`; 400 `unknown topic: <name>` for anything not a `topic` tag). `PUT /:id/access-needs` does the same for `{ accessNeeds }` (options `step-free`, `hearing`, `quiet`, comma-joined in `users.access_needs`; 400 `unknown accessibility need: <name>`). `PUT /:id/diet` sets `{ diet }` to `vegan`, `vegetarian`, `gluten-free` or `null` to clear (`users.diet`, `''` when unset; 400 for anything else); `toUser` gives `diet: string | null`. `PUT /:id/window` takes `{ arrival, departure }`, each `null` or `{ day, time }` (`day` a session day, `time` `HH:MM`), saved together by `server/lib/window.js:setWindow` into `users.arrives_at` / `departs_at` (`''` unset); 400 for a bad day or time, and 400 `Departure can't be earlier than arrival` when departure < arrival (equal is fine); `toUser` gives `arrival` / `departure` as `YYYY-MM-DDTHH:MM | null`. `PUT /:id/level` sets `{ level }` to `Beginner`, `Intermediate`, `Advanced` or `null` to clear (`users.max_level`, `''` when unset; 400 for anything else, "All Levels" included); `toUser` gives `maxLevel: string | null`.
+attendee's topic interests (`{ interests: string[] }`, comma-joined in `users.interests`; 400 `unknown topic: <name>` for anything not a `topic` tag). `PUT /:id/access-needs` does the same for `{ accessNeeds }` (options `step-free`, `hearing`, `quiet`, comma-joined in `users.access_needs`; 400 `unknown accessibility need: <name>`). `PUT /:id/diet` sets `{ diet }` to `vegan`, `vegetarian`, `gluten-free` or `null` to clear (`users.diet`, `''` when unset; 400 for anything else); `toUser` gives `diet: string | null`. `PUT /:id/window` takes `{ arrival, departure }`, each `null` or `{ day, time }` (`day` a session day, `time` `HH:MM`), saved together by `server/lib/window.js:setWindow` into `users.arrives_at` / `departs_at` (`''` unset); 400 for a bad day or time, and 400 `Departure can't be earlier than arrival` when departure < arrival (equal is fine); `toUser` gives `arrival` / `departure` as `YYYY-MM-DDTHH:MM | null`. `PUT /:id/level` sets `{ level }` to `Beginner`, `Intermediate`, `Advanced` or `null` to clear (`users.max_level`, `''` when unset; 400 for anything else, "All Levels" included); `toUser` gives `maxLevel: string | null`. `PUT /:id/job-title` sets `{ jobTitle }`: trimmed, `null`, `''` or all-space clears it (`users.job_title` NULL; `toUser` gives `jobTitle: string | null`), 400 for a non-string or more than 100 characters.
 
 **Client.** `src/lib/api.js:reserveSeat(userId, sessionId, now)` PUTs `now` as
 the body; `api()` throws on non-2xx but keeps `err.status` and `err.payload`.
