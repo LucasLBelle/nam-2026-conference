@@ -4,7 +4,7 @@ import * as api from '../lib/api.js';
 import { viewAgenda, recommend, withSessions } from '../lib/agendaView.js';
 import { dayLabel, timeRange } from '../lib/format.js';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
-import { Button, EmptyState, SeatButton, ErrorState, SectionHeader, Skeleton, Stat } from '../components/ui.jsx';
+import { Button, EmptyState, SeatButton, ErrorState, NotStepFree, SectionHeader, Skeleton, Stat } from '../components/ui.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { Link } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ export function MyAgendaPage() {
   const me = useFetch(() => api.getUser(currentUserId), [currentUserId]);
   const all = useFetch(() => api.getSessions(), []);
   const interests = me.data?.interests;
+  const flagged = (s) => me.data?.accessNeeds?.includes('step-free') && s.room && !s.room.accessible;
   // Every session ever offered as a recommendation: one added from here is not in the fetched schedule.
   const offered = useRef(new Map());
   const recs = useMemo(() => {
@@ -70,6 +71,7 @@ export function MyAgendaPage() {
                     <div className="w-32 shrink-0 font-mono text-xs text-muted">{timeRange(s.startsAt, s.endsAt)}</div>
                     <div className="min-w-0 flex-1">
                       <Link to={`/sessions/${s.id}`} className="line-clamp-2 text-sm font-semibold hover:text-violet-200">{s.title}</Link>
+                      {flagged(s) && <div><NotStepFree /></div>}
                       {s.status === 'waitlisted' && (
                         <span data-testid="agenda-waitlisted" className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300">
                           <Icon name="clock" className="size-3" /> Waitlisted
@@ -100,6 +102,7 @@ export function MyAgendaPage() {
                 <li key={s.id} data-testid="recommendation" className="flex items-center gap-3 rounded-xl border border-hairline bg-raised p-3">
                   <div className="w-32 shrink-0 font-mono text-xs text-muted">{dayLabel(s.day)}<br />{timeRange(s.startsAt, s.endsAt)}</div>
                   <Link to={`/sessions/${s.id}`} className="line-clamp-2 min-w-0 flex-1 text-sm font-semibold hover:text-violet-200">{s.title}</Link>
+                  {flagged(s) && <NotStepFree />}
                   <span data-testid="recommendation-add">
                     <SeatButton size="sm" status={reservationFor(s.id)} onClick={() => toggleSeat(s.id, s)} />
                   </span>

@@ -112,13 +112,13 @@ export const LANES = {
   // Fails a reserve and a release on purpose. Each pane shares its attendee and day 0 only
   // with lanes that pin other slots, and the seed leaves that slot free for that attendee.
   'seats.failure-toast': { desktop: { user: marcus, day: 0, slot: '10:15' }, mobile: { user: abraham, day: 0, slot: '13:30' } },
-  'seats.waitlist':   { desktop: { user: kenji, day: 0 },                 mobile: { user: sofia, day: 3 } },
+  'seats.waitlist':   { desktop: { user: kenji, day: 0 },                 mobile: { user: sofia, day: 3, slot: '09:00' } },
   // Slots pinned only so 'attendance.rating-toast' below can share this
   // attendee and day (a real seat lane, so it never sets its own slot
   // otherwise) — this test's own pick is dynamic and ignores them.
   'seats.queue':      { desktop: { user: marcus, day: 0, slot: '13:30' }, mobile: { user: abraham, day: 0, slot: '10:15' } },
   'conflict.ui':      { desktop: { user: kenji, day: 3, clean: true },    mobile: { user: andy, day: 3, clean: true } },
-  'conflict.api':     { desktop: { user: abraham, day: 3 },                 mobile: { user: jonas, day: 3 } },
+  'conflict.api':     { desktop: { user: abraham, day: 3 },                 mobile: { user: jonas, day: 3, slot: '09:00' } },
   'schedule.grid':    { desktop: { user: sofia, day: 1 },                 mobile: { user: marcus, day: 1 } },
   // read-only: it books nothing, and needs a day the seed sells sessions out on
   'schedule.seats':   { desktop: { user: kenji, day: 1, readOnly: true }, mobile: { user: marcus, day: 0, readOnly: true } },
@@ -130,6 +130,9 @@ export const LANES = {
   'agenda.page':      { desktop: { user: abraham, day: 1 },              mobile: { user: andy, day: 1 } },
   // Books one recommended session (a seat), then tries a clashing one. marcus/day 2 desktop and jonas/day 1 mobile are held by no other lane.
   'agenda.recommend': { desktop: { user: marcus, day: 2 },               mobile: { user: jonas, day: 1 } },
+  // Books the last non-accessible room's session (the seed has them only on the last day, the last at 17:15) and sets accessibility needs.
+  // Every attendee has a day-3 pane, so this one pins 17:15 and 'seats.waitlist' and 'conflict.api' pin the slots they never reach.
+  'access.needs':     { desktop: { user: sofia, day: 3, slot: '17:15' },  mobile: { user: jonas, day: 3, slot: '17:15' } },
   // Check-ins and ratings only — no seat is booked, so agenda: false lets these
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.

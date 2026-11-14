@@ -10,6 +10,7 @@ files:
 tests:
   - tests/api/seats.test.js
   - tests/api/interests.test.js
+  - tests/api/access-needs.test.js
   - tests/api/overlap.test.js
   - tests/seats.spec.js
 related: [attendance, agenda, clock, architecture, testing]
@@ -65,7 +66,7 @@ logic lives elsewhere: `GET /` and `GET /:id` (the user plus `followedSpeakers`,
 doc); attendance, check-in and rating routes (see the attendance doc); and
 `PUT`/`DELETE /:id/follows/:speakerId`, which write `speaker_follows` directly
 through the module-scope `follow`/`unfollow` statements; `PUT /:id/interests` replaces the
-attendee's topic interests (`{ interests: string[] }`, comma-joined in `users.interests`; 400 `unknown topic: <name>` for anything not a `topic` tag).
+attendee's topic interests (`{ interests: string[] }`, comma-joined in `users.interests`; 400 `unknown topic: <name>` for anything not a `topic` tag). `PUT /:id/access-needs` does the same for `{ accessNeeds }` (options `step-free`, `hearing`, `quiet`, comma-joined in `users.access_needs`; 400 `unknown accessibility need: <name>`).
 
 **Client.** `src/lib/api.js:reserveSeat(userId, sessionId, now)` PUTs `now` as
 the body; `api()` throws on non-2xx but keeps `err.status` and `err.payload`.

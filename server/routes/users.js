@@ -24,6 +24,8 @@ const myCheckIns = db.prepare('SELECT session_id FROM check_ins WHERE user_id = 
 const myRatings = db.prepare('SELECT session_id, stars FROM ratings WHERE user_id = ?');
 const topicNames = db.prepare("SELECT name FROM tags WHERE kind = 'topic'");
 const saveInterests = db.prepare('UPDATE users SET interests = ? WHERE id = ?');
+const saveAccessNeeds = db.prepare('UPDATE users SET access_needs = ? WHERE id = ?');
+const ACCESS_NEEDS = ['step-free', 'hearing', 'quiet'];
 const follow = db.prepare('INSERT OR IGNORE INTO speaker_follows (user_id, speaker_id) VALUES (?, ?)');
 const unfollow = db.prepare('DELETE FROM speaker_follows WHERE user_id = ? AND speaker_id = ?');
 
@@ -61,6 +63,19 @@ usersRouter.put('/:id/interests', (req, res) => {
   if (unknown !== undefined) return res.status(400).json({ error: `unknown topic: ${unknown}` });
   saveInterests.run([...new Set(interests)].join(','), req.params.id);
   res.json({ interests: toUser(getUser.get(req.params.id)).interests });
+});
+
+/** Replace this attendee's accessibility needs; any option outside ACCESS_NEEDS rejects the whole request. */
+usersRouter.put('/:id/access-needs', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { accessNeeds } = req.body ?? {};
+  if (!Array.isArray(accessNeeds) || !accessNeeds.every((n) => typeof n === 'string')) {
+    return res.status(400).json({ error: 'accessNeeds must be a list of options' });
+  }
+  const unknown = accessNeeds.find((n) => !ACCESS_NEEDS.includes(n));
+  if (unknown !== undefined) return res.status(400).json({ error: `unknown accessibility need: ${unknown}` });
+  saveAccessNeeds.run([...new Set(accessNeeds)].join(','), req.params.id);
+  res.json({ accessNeeds: toUser(getUser.get(req.params.id)).accessNeeds });
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */

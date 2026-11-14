@@ -38,6 +38,7 @@ tests:
   - tests/switcher.spec.js
   - tests/profile.spec.js
   - tests/interests.spec.js
+  - tests/access-needs.spec.js
   - tests/presentation.spec.js
 related: [architecture, speakers, venues, schedule, testing]
 ---
@@ -137,7 +138,7 @@ sticky `glass` header, `<main id="main">`, and the footer.
   `aria-label="Main"`) and the mobile menu (`aria-label="Mobile"`, toggled by
   the "Open menu"/"Close menu" button, closes on navigation, locks body scroll).
   `/my-agenda` shows `reservations.size` as a badge. `/profile` (`ProfilePage`, `profile-*` test ids)
-  shows the details, then an Interests section (`profile-interests`): one `interest-chip` button (`aria-pressed`) per `kind: 'topic'` tag, each click saving at once through `api.putInterests` and keeping the old selection (with a toast) if it fails. It reads `getUser(currentUser.id)`, refetched when the switcher changes attendee.
+  shows the details, then an Interests section (`profile-interests`): one `interest-chip` button (`aria-pressed`) per `kind: 'topic'` tag, each click saving at once through `api.putInterests` and keeping the old selection (with a toast) if it fails. Then an Accessibility needs section (`profile-access-needs`): three `access-need` buttons (`aria-pressed`: step-free, hearing, quiet) saved the same way through `api.putAccessNeeds`. `NotStepFree` (ui.jsx, `not-step-free`) is the flag shown for a non-accessible room, only to an attendee with `step-free` set. It reads `getUser(currentUser.id)`, refetched when the switcher changes attendee.
 - Footer: three `nav` columns (Programme, On site, Conference) built from an
   inline array of `[label, to]`, plus `conference.dates · conference.city` from
   bootstrap and a plain `<a href="/api/bootstrap">`.
