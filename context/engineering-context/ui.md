@@ -22,6 +22,7 @@ files:
   - src/components/RouteChange.jsx
   - src/pages/HomePage.jsx
   - src/pages/NotFoundPage.jsx
+  - src/pages/ProfilePage.jsx
   - src/pages/PresentationPage.jsx
   - src/pages/ProductPresentationPage.jsx
   - src/pages/OpeningPresentationPage.jsx
