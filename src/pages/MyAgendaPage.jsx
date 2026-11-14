@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useConference, useFetch } from '../lib/store.jsx';
 import * as api from '../lib/api.js';
-import { viewAgenda } from '../lib/agendaView.js';
+import { viewAgenda, recommend, withSessions } from '../lib/agendaView.js';
 import { dayLabel, timeRange } from '../lib/format.js';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
-import { Button, EmptyState, ErrorState, SectionHeader, Skeleton, Stat } from '../components/ui.jsx';
+import { Button, EmptyState, SeatButton, ErrorState, SectionHeader, Skeleton, Stat } from '../components/ui.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { Link } from 'react-router-dom';
 
@@ -12,9 +12,24 @@ const hours = (mins) => `${Math.round((mins / 60) * 10) / 10}h`;
 
 export function MyAgendaPage() {
   useDocumentTitle('My Agenda');
-  const { currentUserId, reservationFor, toggleSeat } = useConference();
+  const { currentUserId, reservationFor, toggleSeat, clock } = useConference();
   const { data, loading, error, reload } = useFetch(() => api.getSchedule(currentUserId), [currentUserId]);
-  const view = useMemo(() => viewAgenda(data?.days ?? [], reservationFor), [data, reservationFor]);
+  // The store's currentUser is the bootstrap copy and goes stale after a Profile save.
+  const me = useFetch(() => api.getUser(currentUserId), [currentUserId]);
+  const all = useFetch(() => api.getSessions(), []);
+  const interests = me.data?.interests;
+  // Every session ever offered as a recommendation: one added from here is not in the fetched schedule.
+  const offered = useRef(new Map());
+  const recs = useMemo(() => {
+    const out = recommend(all.data ?? [], interests ?? [], reservationFor, clock);
+    for (const s of out) offered.current.set(s.id, s);
+    return out;
+  }, [all.data, interests, reservationFor, clock]);
+  // Merge those in so a session added from a recommendation lists in the agenda at once.
+  const view = useMemo(
+    () => viewAgenda(withSessions(data?.days ?? [], [...offered.current.values()]), reservationFor),
+    [data, recs, reservationFor],
+  );
 
   return (
     <div className="space-y-8">
@@ -68,6 +83,31 @@ export function MyAgendaPage() {
             </section>
           ))}
         </>
+      )}
+      {!error && (data || !loading) && me.data && (
+        <section data-testid="agenda-recommendations" className="space-y-3">
+          <h2 className="font-display text-xl">Recommended for you</h2>
+          {!interests.length ? (
+            <p className="text-sm text-muted">
+              Pick some topics you care about and we will suggest sessions.{' '}
+              <Link to="/profile" data-testid="recommendations-set-interests" className="font-semibold text-violet-300 hover:text-violet-200">Set your interests on My Profile</Link>
+            </p>
+          ) : !recs.length ? (
+            <p className="text-sm text-muted">Nothing more upcoming matches your interests.</p>
+          ) : (
+            <ul className="space-y-2">
+              {recs.map((s) => (
+                <li key={s.id} data-testid="recommendation" className="flex items-center gap-3 rounded-xl border border-hairline bg-raised p-3">
+                  <div className="w-32 shrink-0 font-mono text-xs text-muted">{dayLabel(s.day)}<br />{timeRange(s.startsAt, s.endsAt)}</div>
+                  <Link to={`/sessions/${s.id}`} className="line-clamp-2 min-w-0 flex-1 text-sm font-semibold hover:text-violet-200">{s.title}</Link>
+                  <span data-testid="recommendation-add">
+                    <SeatButton size="sm" status={reservationFor(s.id)} onClick={() => toggleSeat(s.id, s)} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
     </div>
   );
