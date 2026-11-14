@@ -32,6 +32,9 @@ export const model = {
       max_tokens: 16000,
       output_config: { effort: 'low' },
       system: 'You map a conference attendee\'s interests onto a fixed list of topics. '
+        + 'Include every topic an attendee with those interests would plausibly want talks on, '
+        + 'including closely related and adjacent ones, not only the single closest match. '
+        + 'Leave out topics with no real connection. '
         + 'Reply with only a JSON array of topic names copied exactly from the list, no other text.',
       messages: [{ role: 'user', content: `Topics: ${JSON.stringify(topicNames)}\n\nInterests: ${text}` }],
     });
