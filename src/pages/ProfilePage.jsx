@@ -1,9 +1,55 @@
+import { useState, useEffect } from 'react';
 import { useConference, useFetch } from '../lib/store.jsx';
 import * as api from '../lib/api.js';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
+import { useToast } from '../components/Toaster.jsx';
 import { Avatar, ErrorState, SectionHeader, Skeleton } from '../components/ui.jsx';
 
-/** Read-only profile of the signed-in attendee; refetches when the switcher changes them. */
+/** Topic chips: each click saves the whole list at once; a failed save keeps the old selection. */
+function Interests({ userId, saved }) {
+  const { tags } = useConference();
+  const toast = useToast();
+  const [selected, setSelected] = useState(saved);
+  useEffect(() => setSelected(saved), [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const topics = tags.filter((t) => t.kind === 'topic');
+
+  const toggle = async (name) => {
+    const next = selected.includes(name) ? selected.filter((n) => n !== name) : [...selected, name];
+    try {
+      const res = await api.putInterests(userId, next);
+      setSelected(res.interests);
+    } catch (err) {
+      toast({ message: err.message, icon: 'alert' });
+    }
+  };
+
+  return (
+    <section className="card space-y-3 p-6" data-testid="profile-interests">
+      <h3 className="font-display text-xl">Interests</h3>
+      <div className="flex flex-wrap gap-2">
+        {topics.map((t) => {
+          const on = selected.includes(t.name);
+          return (
+            <button
+              key={t.name}
+              type="button"
+              aria-pressed={on}
+              data-testid="interest-chip"
+              onClick={() => toggle(t.name)}
+              className={`rounded-full border px-3 py-1 text-sm transition-colors ${on
+                ? 'border-violet-400/60 bg-violet-400/20 text-ink'
+                : 'border-hairline bg-overlay/60 text-faint hover:text-ink'}`}
+            >
+              {t.name}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/** Profile of the signed-in attendee; refetches when the switcher changes them. */
 export function ProfilePage() {
   const { currentUser } = useConference();
   const id = currentUser?.id;
@@ -23,6 +69,7 @@ export function ProfilePage() {
       ['bio', 'Bio', user.bio],
     ].filter(([, , value]) => value);
     body = (
+      <>
       <section className="card flex flex-col gap-6 p-6 sm:flex-row" data-testid="profile">
         <Avatar name={user.name} initials={user.initials} accent={user.accent} imageUrl={user.imageUrl} size="xl" />
         <div className="min-w-0 flex-1 space-y-4">
@@ -37,6 +84,8 @@ export function ProfilePage() {
           </dl>
         </div>
       </section>
+      <Interests userId={id} saved={user.interests} />
+      </>
     );
   }
 
