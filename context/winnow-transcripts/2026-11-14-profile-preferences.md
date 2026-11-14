@@ -1,0 +1,23 @@
+- **Title:** My Profile preferences — accessibility, diet, availability, level, job title and speakers
+- **Date:** 2026-11-14
+- **Participants:** RJ Mey and unnamed group members (the transcript labels only one speaker)
+- **Source:** `context/winnow-transcripts/product-group-2-transcript-2.txt`
+- **Tickets raised:**
+  - [#10 — Let attendees record accessibility needs on My Profile](https://github.com/LucasLBelle/nam-2026-conference/issues/10)
+  - [#11 — Let attendees set dietary requirements on My Profile](https://github.com/LucasLBelle/nam-2026-conference/issues/11)
+  - [#12 — Let attendees set when they arrive and leave on My Profile](https://github.com/LucasLBelle/nam-2026-conference/issues/12)
+  - [#13 — Let attendees set the highest session level they are comfortable with](https://github.com/LucasLBelle/nam-2026-conference/issues/13)
+  - [#14 — Let attendees edit their job title on My Profile](https://github.com/LucasLBelle/nam-2026-conference/issues/14)
+  - [#15 — Show the speakers from your sessions on My Agenda](https://github.com/LucasLBelle/nam-2026-conference/issues/15)
+- **Context updated:** None — nothing discussed exists yet, and the "no invented external links" rule it touched is already in CLAUDE.md.
+- **Set aside:**
+  - Linking speakers to LinkedIn — speaker socials are fictional and CLAUDE.md forbids invented external links; #15 shows the handle as text with the existing Follow button instead.
+  - A remark about moving on to the next feature while one is being built, and "Stop this" — about running the meeting, not the app.
+- **Q&A:**
+  - Asked what accessibility and dietary requirements should do once set. Answered: store and use them — flag sessions in non-accessible rooms; pre-filter the Food page.
+  - Asked how attendees say when they are around. Answered: one arrival and one departure (day and time) for the whole conference.
+  - Asked how the maximum level should affect recommendations. Answered: rank sessions above it lower, not hide them.
+  - Asked what "capture your role" meant. Answered: make the job title editable.
+  - Asked how to handle connecting with speakers via LinkedIn, given the no-external-links rule. Answered: list the speakers with Follow buttons and the handle as text, no links.
+  - Asked how to split the work. Answered: one ticket per field.
+  - Asked whether to create the issues and write this record. Answered: yes.
