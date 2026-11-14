@@ -31,6 +31,8 @@ const saveDiet = db.prepare('UPDATE users SET diet = ? WHERE id = ?');
 const DIETS = ['vegan', 'vegetarian', 'gluten-free'];
 const saveMaxLevel = db.prepare('UPDATE users SET max_level = ? WHERE id = ?');
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+const saveJobTitle = db.prepare('UPDATE users SET job_title = ? WHERE id = ?');
+const MAX_TITLE = 100;
 const follow = db.prepare('INSERT OR IGNORE INTO speaker_follows (user_id, speaker_id) VALUES (?, ?)');
 const unfollow = db.prepare('DELETE FROM speaker_follows WHERE user_id = ? AND speaker_id = ?');
 
@@ -92,6 +94,21 @@ usersRouter.put('/:id/diet', (req, res) => {
   }
   saveDiet.run(diet ?? '', req.params.id);
   res.json({ diet: toUser(getUser.get(req.params.id)).diet });
+});
+
+/** Set this attendee's job title; it is trimmed, and empty, all-space or null clears it. Over MAX_TITLE characters is a 400. */
+usersRouter.put('/:id/job-title', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { jobTitle } = req.body ?? {};
+  if (jobTitle !== null && typeof jobTitle !== 'string') {
+    return res.status(400).json({ error: 'jobTitle must be text, or null' });
+  }
+  const title = (jobTitle ?? '').trim();
+  if (title.length > MAX_TITLE) {
+    return res.status(400).json({ error: `Job title must be ${MAX_TITLE} characters or fewer` });
+  }
+  saveJobTitle.run(title || null, req.params.id);
+  res.json({ jobTitle: toUser(getUser.get(req.params.id)).jobTitle });
 });
 
 /** Set (or, with null, clear) the highest session level this attendee is comfortable with; anything outside LEVELS is a 400. */

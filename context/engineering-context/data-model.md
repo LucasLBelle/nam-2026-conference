@@ -30,7 +30,7 @@ Approximate counts from a fresh seed. The tables attendees write to drift as you
 | `sessions` | ~140 | 4 days × 7 slots × 5 rooms (a few slots left empty), plus a keynote and a social each day |
 | `session_speakers` | ~195 | Many-to-many, with a `role` (Speaker / Moderator / Host) |
 | `session_tags` | ~980 | Many-to-many |
-| `users` | 6 | Attendees. No passwords — there is no auth. `interests` and `access_needs` are comma-joined lists (`step-free`, `hearing`, `quiet`), mapped to `interests` / `accessNeeds` arrays. `arrives_at` / `departs_at` are `YYYY-MM-DDTHH:MM` or `''` (mapped to `arrival` / `departure`, `null`). `max_level` is `Beginner`, `Intermediate`, `Advanced` or `''` (mapped to `maxLevel`, `null`). `diet` is one of `vegan`, `vegetarian`, `gluten-free`, or `''` (mapped to `null`) |
+| `users` | 6 | Attendees. No passwords — there is no auth. `interests` and `access_needs` are comma-joined lists (`step-free`, `hearing`, `quiet`), mapped to `interests` / `accessNeeds` arrays. `arrives_at` / `departs_at` are `YYYY-MM-DDTHH:MM` or `''` (mapped to `arrival` / `departure`, `null`). `max_level` is `Beginner`, `Intermediate`, `Advanced` or `''` (mapped to `maxLevel`, `null`). `job_title` is user-editable (max 100 characters; `''`/NULL map to `null`). `diet` is one of `vegan`, `vegetarian`, `gluten-free`, or `''` (mapped to `null`) |
 | `reservations` | ~60 | An attendee's agenda. Holds a real seat; `status` is `confirmed` or `waitlisted` |
 | `speaker_follows` | ~20 | Follow button on a speaker's profile; only the speaker pages read it |
 | `ratings` | ~10 | Only submittable by someone who checked in, once the session is over |

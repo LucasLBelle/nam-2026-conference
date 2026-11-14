@@ -169,6 +169,11 @@ export function ConferenceProvider({ children }) {
     setConflict(null);
   }, [conflict, currentUserId, applySeatState, toast, clock]);
 
+  /** Merge a change into one attendee in the bootstrap list, so the switcher and `currentUser` follow a profile save. */
+  const patchUser = useCallback((id, patch) => {
+    setData((d) => (d ? { ...d, users: d.users.map((u) => (u.id === id ? { ...u, ...patch } : u)) } : d));
+  }, []);
+
   const value = useMemo(() => {
     const users = data?.users ?? [];
     return {
@@ -179,6 +184,7 @@ export function ConferenceProvider({ children }) {
       currentUser: users.find((u) => u.id === currentUserId) ?? users[0] ?? null,
       currentUserId,
       setCurrentUserId,
+      patchUser,
       followingIds,
       isFollowing: (id) => followingIds.has(id),
       toggleFollow,
@@ -197,7 +203,7 @@ export function ConferenceProvider({ children }) {
       roomById: Object.fromEntries((data?.rooms ?? []).map((r) => [r.id, r])),
     };
   }, [data, error, clock, currentUserId, followingIds, toggleFollow,
-      reservations, seatCounts, reserveSeat, releaseSeat, toggleSeat,
+      reservations, seatCounts, reserveSeat, releaseSeat, toggleSeat, patchUser,
       conflict, resolveConflict]);
 
   return <ConferenceContext.Provider value={value}>{children}</ConferenceContext.Provider>;
