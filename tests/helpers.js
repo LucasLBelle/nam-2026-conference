@@ -128,6 +128,8 @@ export const LANES = {
   'switcher.live-count': { desktop: { user: marcus, day: 3 }, mobile: { user: jonas, day: 0, clean: true } },
   // Books one seat and one waitlist place on its day, then removes them from the page.
   'agenda.page':      { desktop: { user: abraham, day: 1 },              mobile: { user: andy, day: 1 } },
+  // Books one recommended session (a seat), then tries a clashing one. marcus/day 2 desktop and jonas/day 1 mobile are held by no other lane.
+  'agenda.recommend': { desktop: { user: marcus, day: 2 },               mobile: { user: jonas, day: 1 } },
   // Check-ins and ratings only — no seat is booked, so agenda: false lets these
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.

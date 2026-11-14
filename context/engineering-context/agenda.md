@@ -26,7 +26,14 @@ per-day and total `bookedMinutes` (confirmed only) and `waitlistedMinutes`. Test
 `agenda-day`, `agenda-session`, `agenda-waitlisted` (queued rows only), `agenda-booked`
 (a `Stat`; its note `agenda-waitlisted-time` reads `+Nh waitlisted`), `agenda-remove`
 (calls `toggleSeat`, so the row leaves without a reload) and `agenda-empty` (links to
-`/schedule`). Still not on it: today view, suggestions, check-in, `.ics`. Payloads below
+`/schedule`). Below the list, **Recommended for you** (`agenda-recommendations`): the page also
+fetches `api.getUser` (fresh `interests`; the store's copy is stale after a Profile save) and
+`api.getSessions()`, and `agendaView.js:recommend(sessions, interests, reservationFor, clock, limit=8)`
+keeps upcoming sessions tagged (kind `topic`, by name) with any interest, not held (seat or
+waitlist) and not `hasEnded`, soonest first. Rows are `recommendation` with a `SeatButton` inside
+`recommendation-add` (so a clash opens `ConflictDialog`); with no interests
+`recommendations-set-interests` links to `/profile`. `withSessions(days, sessions)` merges
+once-recommended sessions into the schedule's days so an added one lists without a reload. Still not on it: today view, suggestions, check-in, `.ics`. Payloads below
 are served, with matching functions in `src/lib/api.js`. What a day is made of is decided in
 `server/lib/agenda.js`; routes in `server/routes/users.js` only validate and call it.
 

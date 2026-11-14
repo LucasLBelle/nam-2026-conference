@@ -1,3 +1,5 @@
+import { hasEnded } from './clock.js';
+
 /**
  * The agenda as the store sees it. `days` is `/users/:id/schedule`; the store's
  * `reservationFor` is the source of truth, so a removed session leaves the page
@@ -21,4 +23,31 @@ export function viewAgenda(days, reservationFor) {
     out.push(d);
   }
   return { days: out, bookedMinutes, waitlistedMinutes };
+}
+
+/**
+ * Upcoming sessions tagged (topic tags, by name) with any of the attendee's
+ * interests, soonest first, leaving out anything already held — seat or
+ * waitlist place — and anything over by the simulated clock. A full session
+ * stays: its add button waitlists.
+ */
+export function recommend(sessions, interests, reservationFor, clock, limit = 8) {
+  if (!interests?.length) return [];
+  const wanted = new Set(interests);
+  return sessions
+    .filter((s) => s.tags?.some((t) => t.kind === 'topic' && wanted.has(t.name)))
+    .filter((s) => !reservationFor(s.id) && !hasEnded(s, clock))
+    .sort((a, b) => a.day.localeCompare(b.day) || a.startsAt.localeCompare(b.startsAt) || a.id - b.id)
+    .slice(0, limit);
+}
+
+/** Merge extra sessions into the schedule's days (deduped by id), so one just added from a recommendation can be listed. */
+export function withSessions(days, sessions) {
+  const byDate = new Map(days.map((d) => [d.date, { ...d, sessions: [...d.sessions] }]));
+  for (const s of sessions) {
+    const day = byDate.get(s.day) ?? { date: s.day, sessions: [] };
+    if (!day.sessions.some((x) => x.id === s.id)) day.sessions.push(s);
+    byDate.set(s.day, day);
+  }
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 }

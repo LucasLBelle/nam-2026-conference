@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { viewAgenda } from '../../src/lib/agendaView.js';
+import { viewAgenda, recommend, withSessions } from '../../src/lib/agendaView.js';
 
 const s = (id, startsAt, durationMins) => ({ id, startsAt, durationMins });
 const days = [
@@ -33,4 +33,45 @@ test('a session the store no longer holds drops out, and an emptied day with it'
 test('nothing held gives no days and zero totals', () => {
   const v = viewAgenda(days, statuses({}));
   assert.deepEqual(v, { days: [], bookedMinutes: 0, waitlistedMinutes: 0 });
+});
+
+const r = (id, day, startsAt, endsAt, topics = [], kind = 'topic') =>
+  ({ id, day, startsAt, endsAt, durationMins: 60, tags: topics.map((name) => ({ name, kind })) });
+const catalogue = [
+  r(1, '2030-01-02', '09:00', '10:00', ['AI']),
+  r(2, '2030-01-02', '11:00', '12:00', ['Cloud']),
+  r(3, '2030-01-02', '13:00', '14:00', ['Data']),
+  r(4, '2030-01-03', '09:00', '10:00', ['AI', 'Data']),
+  r(5, '2030-01-03', '10:00', '11:00', ['Security']),
+  r(6, '2030-01-03', '12:00', '13:00', ['AI'], 'level'),
+];
+const now = { day: '2030-01-02', time: '10:30' };
+
+test('recommend: any interest matches, ended and held sessions drop, soonest first', () => {
+  const held = (id) => ({ 3: 'waitlisted' })[id] ?? null;
+  const out = recommend(catalogue, ['AI', 'Cloud', 'Data'], held, now, 8);
+  // 1 has ended, 3 is held (waitlisted counts), 6 is a level tag not a topic
+  assert.deepEqual(out.map((x) => x.id), [2, 4]);
+});
+
+test('recommend: no interests, nothing; limit caps; a confirmed seat drops too', () => {
+  assert.deepEqual(recommend(catalogue, [], () => null, now, 8), []);
+  assert.deepEqual(recommend(catalogue, ['AI', 'Cloud', 'Data'], () => null, now, 1).map((x) => x.id), [2]);
+  assert.deepEqual(recommend(catalogue, ['Cloud'], () => 'confirmed', now, 8), []);
+});
+
+test('recommend: a session starting later today but not over yet stays; one that just ended goes', () => {
+  const edge = [r(7, '2030-01-02', '10:00', '10:30', ['AI']), r(8, '2030-01-02', '10:30', '11:30', ['AI'])];
+  assert.deepEqual(recommend(edge, ['AI'], () => null, now, 8).map((x) => x.id), [8]);
+});
+
+test('withSessions: merges into existing days, adds missing days, dedupes by id', () => {
+  const base = [{ date: '2030-01-02', sessions: [s(1, '09:00', 60)] }];
+  const out = withSessions(base, [
+    { id: 1, day: '2030-01-02', startsAt: '09:00', durationMins: 60 },
+    { id: 2, day: '2030-01-02', startsAt: '10:00', durationMins: 60 },
+    { id: 3, day: '2030-01-03', startsAt: '09:00', durationMins: 60 },
+  ]);
+  assert.deepEqual(out.map((d) => [d.date, d.sessions.map((x) => x.id)]), [['2030-01-02', [1, 2]], ['2030-01-03', [3]]]);
+  assert.deepEqual(base[0].sessions.map((x) => x.id), [1]);
 });
