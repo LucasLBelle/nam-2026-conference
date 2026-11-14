@@ -35,6 +35,7 @@ tests:
   - tests/smoke.spec.js
   - tests/home.spec.js
   - tests/switcher.spec.js
+  - tests/profile.spec.js
   - tests/presentation.spec.js
 related: [architecture, speakers, venues, schedule, testing]
 ---
@@ -133,7 +134,8 @@ sticky `glass` header, `<main id="main">`, and the footer.
 - `NAV` array (`to, label, icon, end`) drives both the desktop nav (`lg+`,
   `aria-label="Main"`) and the mobile menu (`aria-label="Mobile"`, toggled by
   the "Open menu"/"Close menu" button, closes on navigation, locks body scroll).
-  `/my-agenda` shows `reservations.size` as a badge.
+  `/my-agenda` shows `reservations.size` as a badge. `/profile` (`ProfilePage`, `profile-*` test ids)
+  is read-only: `getUser(currentUser.id)`, refetched when the switcher changes attendee.
 - Footer: three `nav` columns (Programme, On site, Conference) built from an
   inline array of `[label, to]`, plus `conference.dates · conference.city` from
   bootstrap and a plain `<a href="/api/bootstrap">`.
