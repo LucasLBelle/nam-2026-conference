@@ -10,7 +10,6 @@ The personal side of the app is left for workshop teams to build, so it is
 blank on purpose — build it when a ticket asks, never as a side effect of
 another change:
 
-- **My Agenda** (`/my-agenda`) is a *coming soon* placeholder.
 - **Home** is static: a hero, links into the app, the latest announcement and
   the sponsors. Nothing on it is about the signed-in attendee.
 - **Following** works on the speaker pages, but nothing shows what you follow
