@@ -104,26 +104,33 @@ function VendorCard({ vendor, venue, now, featured }) {
 
 export function FoodPage() {
   useDocumentTitle('Food & drink');
-  const { venues, venueById, cuisines = [], clock } = useConference();
+  const { venues, venueById, cuisines = [], clock, currentUser } = useConference();
   const [params, setParams] = useSearchParams();
 
   const q = params.get('q') ?? '';
   const venue = params.get('venue') ?? ALL;
-  const dietary = params.get('dietary') ?? ALL;
+  // The attendee's saved diet is the starting filter; a dietary in the URL (even "all") wins.
+  const urlDietary = params.get('dietary');
+  const { data: profile, error: profileError } = useFetch(() => api.getUser(currentUser.id), [currentUser?.id]);
+  const profileReady = urlDietary !== null || profile?.id === currentUser?.id || !!profileError;
+  const profileDiet = profile?.id === currentUser?.id ? profile.diet : null;
+  const dietary = urlDietary ?? profileDiet ?? ALL;
   const cuisine = params.get('cuisine') ?? ALL;
   const sort = params.get('sort') ?? 'rating';
   const openNow = params.get('open') === '1';
 
   const set = (key, value) => {
     const next = new URLSearchParams(params);
-    if (!value || value === ALL) next.delete(key);
+    // Clearing dietary while a profile diet exists writes "all", or the profile would re-apply.
+    if (key === 'dietary' && (!value || value === ALL) && profileDiet) next.set(key, ALL);
+    else if (!value || value === ALL) next.delete(key);
     else next.set(key, value);
     setParams(next, { replace: true });
   };
 
   const { data, loading, error, reload } = useFetch(
-    () => api.getVendors({ q, venueId: venue, dietary, cuisine }),
-    [q, venue, dietary, cuisine],
+    () => (profileReady ? api.getVendors({ q, venueId: venue, dietary, cuisine }) : new Promise(() => {})),
+    [q, venue, dietary, cuisine, profileReady],
   );
 
   const vendors = useMemo(() => {

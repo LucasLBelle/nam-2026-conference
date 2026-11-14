@@ -26,6 +26,8 @@ const topicNames = db.prepare("SELECT name FROM tags WHERE kind = 'topic'");
 const saveInterests = db.prepare('UPDATE users SET interests = ? WHERE id = ?');
 const saveAccessNeeds = db.prepare('UPDATE users SET access_needs = ? WHERE id = ?');
 const ACCESS_NEEDS = ['step-free', 'hearing', 'quiet'];
+const saveDiet = db.prepare('UPDATE users SET diet = ? WHERE id = ?');
+const DIETS = ['vegan', 'vegetarian', 'gluten-free'];
 const follow = db.prepare('INSERT OR IGNORE INTO speaker_follows (user_id, speaker_id) VALUES (?, ?)');
 const unfollow = db.prepare('DELETE FROM speaker_follows WHERE user_id = ? AND speaker_id = ?');
 
@@ -76,6 +78,17 @@ usersRouter.put('/:id/access-needs', (req, res) => {
   if (unknown !== undefined) return res.status(400).json({ error: `unknown accessibility need: ${unknown}` });
   saveAccessNeeds.run([...new Set(accessNeeds)].join(','), req.params.id);
   res.json({ accessNeeds: toUser(getUser.get(req.params.id)).accessNeeds });
+});
+
+/** Set (or, with null, clear) this attendee's dietary requirement; anything outside DIETS is a 400. */
+usersRouter.put('/:id/diet', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { diet } = req.body ?? {};
+  if (diet !== null && !DIETS.includes(diet)) {
+    return res.status(400).json({ error: `diet must be one of ${DIETS.join(', ')}, or null` });
+  }
+  saveDiet.run(diet ?? '', req.params.id);
+  res.json({ diet: toUser(getUser.get(req.params.id)).diet });
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */

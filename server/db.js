@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
   ticket_tier TEXT NOT NULL DEFAULT 'Standard',
   interests   TEXT NOT NULL DEFAULT '',
   access_needs TEXT NOT NULL DEFAULT '',
+  diet        TEXT NOT NULL DEFAULT '',
   -- Attendees who are also presenting link to their speakers row.
   speaker_id  INTEGER REFERENCES speakers(id)
 );

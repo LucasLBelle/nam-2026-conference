@@ -133,6 +133,8 @@ export const LANES = {
   // Books the last non-accessible room's session (the seed has them only on the last day, the last at 17:15) and sets accessibility needs.
   // Every attendee has a day-3 pane, so this one pins 17:15 and 'seats.waitlist' and 'conflict.api' pin the slots they never reach.
   'access.needs':     { desktop: { user: sofia, day: 3, slot: '17:15' },  mobile: { user: jonas, day: 3, slot: '17:15' } },
+  // Sets a diet on My Profile and reads it on the Food page; books nothing, and no other lane writes a diet, so readOnly.
+  'diet.profile':     { desktop: { user: marcus, day: 0, readOnly: true }, mobile: { user: jonas, day: 0, readOnly: true } },
   // Check-ins and ratings only — no seat is booked, so agenda: false lets these
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.
