@@ -14,6 +14,7 @@ tests:
   - server/lib/interestsModel.js
   - tests/api/access-needs.test.js
   - tests/api/diet.test.js
+  - tests/api/job-title.test.js
   - tests/api/level.test.js
   - tests/profile-level.spec.js
   - tests/api/overlap.test.js

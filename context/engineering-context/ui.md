@@ -40,6 +40,7 @@ tests:
   - tests/interests.spec.js
   - tests/access-needs.spec.js
   - tests/diet.spec.js
+  - tests/job-title.spec.js
   - tests/window.spec.js
   - tests/presentation.spec.js
 related: [architecture, speakers, venues, schedule, testing]
@@ -141,6 +142,7 @@ sticky `glass` header, `<main id="main">`, and the footer.
   the "Open menu"/"Close menu" button, closes on navigation, locks body scroll).
   `/my-agenda` shows `reservations.size` as a badge. `/profile` (`ProfilePage`, `profile-*` test ids)
   shows the details, then an Interests section (`profile-interests`): one `interest-chip` button (`aria-pressed`) per `kind: 'topic'` tag, each click saving at once through `api.putInterests` and keeping the old selection (with a toast) if it fails; when it arrives from Home with `location.state.interestsSet` it shows `interests-note`. Then an Accessibility needs section (`profile-access-needs`): three `access-need` buttons (`aria-pressed`: step-free, hearing, quiet) saved the same way through `api.putAccessNeeds`. Then a Dietary requirements section (`profile-diet`): three single-select `diet-option` buttons (`aria-pressed`; click the chosen one again to clear) saved through `api.putDiet`; the Food page starts from it. Then an Arriving and leaving section (`profile-window`): per end a day `<select>` (`arrival-day`, `departure-day`, from `useConference().days`) and a time input (`arrival-time`, `departure-time`), both optional, with no Save button: a change saves through `api.putWindow` as soon as each end is whole (day and time) or empty, so a half-filled end waits (a 400 shows its message in a toast and nothing is saved) and a Clear per end (`window-clear-arrival`, `window-clear-departure`); My Agenda's recommendations use it. Last, a Highest session level section (`profile-level`): three single-select `level-option` buttons (`aria-pressed`; click the chosen one again to clear) saved through `api.putLevel`; My Agenda's recommendations list sessions above it last. `NotStepFree` (ui.jsx, `not-step-free`) is the flag shown for a non-accessible room, only to an attendee with `step-free` set. It reads `getUser(currentUser.id)`, refetched when the switcher changes attendee.
+
 - Footer: three `nav` columns (Programme, On site, Conference) built from an
   inline array of `[label, to]`, plus `conference.dates · conference.city` from
   bootstrap and a plain `<a href="/api/bootstrap">`.

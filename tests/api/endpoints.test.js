@@ -167,6 +167,7 @@ describe('Every endpoint answers', () => {
       () => api.put('/users/999999/access-needs', { accessNeeds: [] }),
       () => api.put('/users/999999/diet', { diet: null }),
       () => api.put('/users/999999/level', { level: null }),
+      () => api.put('/users/999999/job-title', { jobTitle: null }),
       () => api.put(`/users/${ids.user}/follows/999999`, {}),
     ];
     for (const write of writes) {
@@ -195,7 +196,7 @@ describe('Every endpoint answers', () => {
       'GET users/:id/agenda.ics', 'GET users/:id/attendance/:sessionId',
       'GET users/:id/reservations/:sessionId',
       'PUT users/:id/reservations/:sessionId', 'PUT users/:id/checkins/:sessionId',
-      'PUT users/:id/ratings/:sessionId', 'PUT users/:id/follows/:speakerId', 'PUT users/:id/interests', 'PUT users/:id/access-needs', 'PUT users/:id/diet', 'PUT users/:id/level', 'PUT users/:id/window',
+      'PUT users/:id/ratings/:sessionId', 'PUT users/:id/follows/:speakerId', 'PUT users/:id/interests', 'PUT users/:id/access-needs', 'PUT users/:id/diet', 'PUT users/:id/level', 'PUT users/:id/job-title', 'PUT users/:id/window',
       'DELETE users/:id/reservations/:sessionId', 'DELETE users/:id/follows/:speakerId',
     ];
 

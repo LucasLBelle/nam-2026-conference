@@ -149,6 +149,39 @@ function Diet({ userId, saved }) {
   );
 }
 
+/** Job title: typed, then saved with the button; empty clears it. A failed save keeps what was typed. */
+function JobTitle({ userId, saved }) {
+  const { patchUser } = useConference();
+  const toast = useToast();
+  const [text, setText] = useState(saved ?? '');
+  useEffect(() => setText(saved ?? ''), [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const save = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.putJobTitle(userId, text);
+      setText(res.jobTitle ?? '');
+      patchUser(userId, { jobTitle: res.jobTitle });
+    } catch (err) {
+      toast({ message: err.message, icon: 'alert' });
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="flex flex-wrap items-center gap-2">
+      <input
+        type="text"
+        aria-label="Job title"
+        data-testid="profile-job-title-input"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="min-w-0 flex-1 rounded-lg border border-hairline bg-overlay/60 px-3 py-1.5 text-sm"
+      />
+      <button type="submit" data-testid="profile-job-title-save" className="rounded-lg border border-hairline px-3 py-1.5 text-sm hover:text-ink">Save</button>
+    </form>
+  );
+}
+
 const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced'];
 
 /** Highest session level: one at a time, click the chosen one again to clear; My Agenda lists sessions above it last. */
@@ -254,6 +287,13 @@ function ArrivalDeparture({ userId, saved }) {
   );
 }
 
+const Row = ({ k, label, value }) => (
+  <div>
+    <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{label}</dt>
+    <dd className="mt-0.5 break-words text-sm text-ink" data-testid={`profile-${k}`}>{value}</dd>
+  </div>
+);
+
 /** Profile of the signed-in attendee; refetches when the switcher changes them. */
 export function ProfilePage() {
   const { currentUser } = useConference();
@@ -268,7 +308,6 @@ export function ProfilePage() {
     // Empty fields are left out rather than shown as blanks.
     const rows = [
       ['pronouns', 'Pronouns', user.pronouns],
-      ['job-title', 'Job title', user.jobTitle],
       ['company', 'Company', user.company],
       ['email', 'Email', user.email],
       ['bio', 'Bio', user.bio],
@@ -280,12 +319,13 @@ export function ProfilePage() {
         <div className="min-w-0 flex-1 space-y-4">
           <h2 className="font-display text-3xl" data-testid="profile-name">{user.name}</h2>
           <dl className="space-y-3">
-            {rows.map(([key, label, value]) => (
-              <div key={key}>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{label}</dt>
-                <dd className="mt-0.5 break-words text-sm text-ink" data-testid={`profile-${key}`}>{value}</dd>
-              </div>
-            ))}
+            {rows.filter(([k]) => k === 'pronouns').map(([key, label, value]) => <Row key={key} k={key} label={label} value={value} />)}
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">Job title</dt>
+              <dd className="mt-0.5 break-words text-sm text-ink" data-testid="profile-job-title">{currentUser.jobTitle}</dd>
+              <dd className="mt-1.5"><JobTitle userId={id} saved={currentUser.jobTitle} /></dd>
+            </div>
+            {rows.filter(([k]) => k !== 'pronouns').map(([key, label, value]) => <Row key={key} k={key} label={label} value={value} />)}
           </dl>
         </div>
       </section>
