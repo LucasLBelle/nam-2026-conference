@@ -40,7 +40,7 @@ related: [seed, ui, agenda, architecture]
   in `server/lib/attendance.js` (and at seed time). See CLAUDE.md § Nothing may
   claim to be true.
 
-**Follows** live in `server/routes/users.js`, not here:
+**Follows** also show as a Follow / Following button on My Agenda's speakers section (`agenda-speaker-follow`). They live in `server/routes/users.js`, not here:
 `PUT` / `DELETE /api/users/:id/follows/:speakerId` (table `speaker_follows`,
 `INSERT OR IGNORE`). `GET /api/users/:id` returns `followedSpeakers`. Client:
 `api.followSpeaker` / `api.unfollowSpeaker`; `useConference()` exposes

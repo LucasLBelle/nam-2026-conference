@@ -25,6 +25,13 @@ export function viewAgenda(days, reservationFor) {
   return { days: out, bookedMinutes, waitlistedMinutes };
 }
 
+/** Each speaker of the sessions in a `viewAgenda` result once, in order of their first session (days, then start time). */
+export function speakersOf(view) {
+  const seen = new Map();
+  for (const day of view.days) for (const s of day.sessions) for (const sp of s.speakers ?? []) if (!seen.has(sp.id)) seen.set(sp.id, sp);
+  return [...seen.values()];
+}
+
 const LEVEL_RANK = { Beginner: 0, Intermediate: 1, Advanced: 2 };
 
 /**

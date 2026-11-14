@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { viewAgenda, recommend, withSessions } from '../../src/lib/agendaView.js';
+import { viewAgenda, recommend, withSessions, speakersOf } from '../../src/lib/agendaView.js';
 
 const s = (id, startsAt, durationMins) => ({ id, startsAt, durationMins });
 const days = [
@@ -140,4 +140,27 @@ test('recommend: no maximum, null or omitted, leaves the soonest-first order', (
 test('recommend: the limit applies after the reorder, so above-maximum sessions show only when the rest run out', () => {
   assert.deepEqual(byLevel('Beginner', 2), [2, 5]);
   assert.deepEqual(byLevel('Beginner', 3), [2, 5, 1]);
+});
+
+const sp = (id, name = `S${id}`) => ({ id, name });
+const withSpeakers = (id, startsAt, speakers) => ({ ...s(id, startsAt, 60), speakers });
+const spDays = [
+  { date: '2030-01-02', sessions: [withSpeakers(2, '10:00', [sp(7), sp(8)]), withSpeakers(1, '09:00', [sp(9), sp(7)])] },
+  { date: '2030-01-03', sessions: [withSpeakers(3, '09:00', [sp(8)]), { ...s(4, '11:00', 30) }] },
+];
+
+test('speakersOf: each speaker once, in order of their first session', () => {
+  const v = viewAgenda(spDays, statuses({ 1: 'confirmed', 2: 'waitlisted', 3: 'confirmed', 4: 'confirmed' }));
+  assert.deepEqual(speakersOf(v).map((x) => x.id), [9, 7, 8]);
+});
+
+test('speakersOf: unholding a session drops its speakers, but not one still on another', () => {
+  const v = viewAgenda(spDays, statuses({ 2: 'confirmed', 3: 'confirmed' }));
+  assert.deepEqual(speakersOf(v).map((x) => x.id), [7, 8]);
+  assert.deepEqual(speakersOf(viewAgenda(spDays, statuses({ 1: 'confirmed' }))).map((x) => x.id), [9, 7]);
+});
+
+test('speakersOf: an empty agenda has none', () => {
+  assert.deepEqual(speakersOf(viewAgenda(spDays, statuses({}))), []);
+  assert.deepEqual(speakersOf({ days: [] }), []);
 });
