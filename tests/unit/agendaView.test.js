@@ -75,3 +75,38 @@ test('withSessions: merges into existing days, adds missing days, dedupes by id'
   assert.deepEqual(out.map((d) => [d.date, d.sessions.map((x) => x.id)]), [['2030-01-02', [1, 2]], ['2030-01-03', [3]]]);
   assert.deepEqual(base[0].sessions.map((x) => x.id), [1]);
 });
+
+// Window: arrival/departure are `YYYY-MM-DDTHH:MM`, like `?at=`. A session must fit wholly inside.
+const win = [
+  r(21, '2030-01-02', '09:00', '10:00', ['AI']),
+  r(22, '2030-01-02', '11:00', '12:00', ['AI']),
+  r(23, '2030-01-02', '13:00', '14:00', ['AI']),
+  r(24, '2030-01-03', '09:00', '10:00', ['AI']),
+];
+const early = { day: '2030-01-01', time: '08:00' };
+const ids = (w) => recommend(win, ['AI'], () => null, early, 8, w).map((x) => x.id);
+
+test('recommend window: neither set excludes nothing', () => {
+  assert.deepEqual(ids({}), [21, 22, 23, 24]);
+  assert.deepEqual(ids({ arrival: null, departure: null }), [21, 22, 23, 24]);
+  assert.deepEqual(recommend(win, ['AI'], () => null, early, 8), [21, 22, 23, 24].map((id) => win.find((s) => s.id === id)));
+});
+
+test('recommend window: before, inside and after', () => {
+  assert.deepEqual(ids({ arrival: '2030-01-02T10:30', departure: '2030-01-02T12:30' }), [22]);
+});
+
+test('recommend window: only arrival, only departure', () => {
+  assert.deepEqual(ids({ arrival: '2030-01-02T11:00' }), [22, 23, 24]);
+  assert.deepEqual(ids({ departure: '2030-01-02T14:00' }), [21, 22, 23]);
+});
+
+test('recommend window: a session straddling an edge is excluded, one touching it stays', () => {
+  assert.deepEqual(ids({ arrival: '2030-01-02T09:30', departure: '2030-01-02T13:30' }), [22]);
+  assert.deepEqual(ids({ arrival: '2030-01-02T09:00', departure: '2030-01-02T10:00' }), [21]);
+});
+
+test('recommend window: days count, not just times', () => {
+  assert.deepEqual(ids({ arrival: '2030-01-03T00:00' }), [24]);
+  assert.deepEqual(ids({ departure: '2030-01-02T23:59' }), [21, 22, 23]);
+});
