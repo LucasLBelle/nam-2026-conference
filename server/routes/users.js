@@ -62,7 +62,7 @@ usersRouter.post('/:id/interests/describe', async (req, res) => {
   if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
   const text = req.body?.text;
   if (typeof text !== 'string' || !text.trim()) return res.status(400).json({ error: 'text must be a non-empty string' });
-  if (!model.available()) return res.status(503).json({ error: 'Describing your interests is unavailable right now. Pick topics on My Profile instead.' });
+  if (!(await model.available())) return res.status(503).json({ error: 'Describing your interests is unavailable right now. Pick topics on My Profile instead.' });
   const names = topicNames.all().map((t) => t.name);
   let picked;
   try {
