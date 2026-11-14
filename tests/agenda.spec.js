@@ -28,6 +28,8 @@ test.describe('My Agenda', () => {
       const dayLabel = page.getByTestId('agenda-day').filter({ has: page.getByText(seat.title, { exact: true }) });
       const rows = dayLabel.getByTestId('agenda-session');
       const expectedOrder = [...booked].sort((a, b) => a.startsAt.localeCompare(b.startsAt)).map((s) => s.title);
+      await expect(rows.filter({ hasText: expectedOrder[0] })).toHaveCount(1);
+      await expect(rows.filter({ hasText: expectedOrder[1] })).toHaveCount(1);
       const titles = await rows.allInnerTexts();
       const pos = (title) => titles.findIndex((t) => t.includes(title));
       expect(pos(expectedOrder[0])).toBeLessThan(pos(expectedOrder[1]));
