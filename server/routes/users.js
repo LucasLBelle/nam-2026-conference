@@ -57,10 +57,6 @@ usersRouter.get('/:id', (req, res) => {
   }));
 });
 
-/** Replace this attendee's topic interests; any name that is not a topic tag rejects the whole request. */
-usersRouter.put('/:id/interests', (req, res) => {
-  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
-
 /** Map free text to topic tags through the model and replace the attendee's interests with them. */
 usersRouter.post('/:id/interests/describe', async (req, res) => {
   if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
@@ -79,6 +75,10 @@ usersRouter.post('/:id/interests/describe', async (req, res) => {
   saveInterests.run(keep.join(','), req.params.id);
   res.json({ interests: toUser(getUser.get(req.params.id)).interests });
 });
+
+/** Replace this attendee's topic interests; any name that is not a topic tag rejects the whole request. */
+usersRouter.put('/:id/interests', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
   const { interests } = req.body ?? {};
   if (!Array.isArray(interests) || !interests.every((n) => typeof n === 'string')) {
     return res.status(400).json({ error: 'interests must be a list of topic names' });
